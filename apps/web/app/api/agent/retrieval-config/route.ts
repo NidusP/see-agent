@@ -1,0 +1,24 @@
+import { type NextRequest } from "next/server";
+
+import { proxyBackend } from "../../../_lib/backend-proxy";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(request: NextRequest) {
+  return proxyBackend("/api/agent/retrieval-config", undefined, request);
+}
+
+export async function PUT(request: NextRequest) {
+  const payload = await request.text();
+  return proxyBackend(
+    "/api/agent/retrieval-config",
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: payload || "{}",
+    },
+    request,
+  );
+}

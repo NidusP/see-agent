@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://see-agent.local/contracts/chat-runtime-strict-response.schema.json",
+  "title": "StrictChatRuntimeResponse",
+  "description": "F0 target contract. A valid response records what was actually executed; it never asks Backend to infer or repair an answer, citation, scope or provider fact.",
+  "type": "object",
+  "required": [
+    "request_id",
+    "conversation_id",
+    "message_id",
+    "assistant_message",
+    "answer_disposition",
+    "refusal",
+    "finish_reason",
+    "completed_at",
+    "intent",
+    "execution",
+    "citations",
+    "citation_anchors",
+    "used_citation_ranks",
+    "retrieval_candidates",
+    "policy_evaluation_performed",
+    "answer_generation_performed",
+    "retrieval_performed",
+    "generation_performed",
+    "knowledge_used"
+  ],
+  "properties": {
+    "request_id": {"type": "string", "minLength": 1},
+    "conversation_id": {"type": "string", "minLength": 1},
+    "message_id": {"type": "string", "minLength": 1},
+    "assistant_message": {"$ref": "#/$defs/AssistantMessage"},
+    "answer_disposition": {"type": "string", "enum": ["grounded_answer", "partial_answer", "clarification_required", "insufficient_evidence", "controlled_response"]},
+    "refusal": {"type": "boolean"},
+    "finish_reason": {"type": "string", "enum": ["stop", "length", "refusal"]},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "intent": {"type": "string", "enum": ["knowledge_query", "social_greeting", "social_thanks", "social_farewell", "capability_help", "off_topic", "out_of_scope"]},
+    "answer_policy_version": {"type": "string", "enum": ["answer_policy_v1", "answer_policy_v2", "answer_policy_v3", "answer_policy_v4", "answer_policy_v5"]},
+    "policy_evaluation_performed": {"type": "boolean"},
+    "answer_generation_performed": {"type": "boolean"},
+    "execution": {"$ref": "#/$defs/ExecutionObservation"},
+    "knowledge_scope": {"$ref": "#/$defs/KnowledgeScope"},
+    "citations": {"type": "array", "items": {"$ref": "#/$defs/Citation"}},
+    "citation_anchors": {"type": "array", "items": {"$ref": "#/$defs/CitationAnchor"}},
+    "used_citation_ranks": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
+    "retrieval_candidates": {"type": "array", "items": {"$ref": "#/$defs/RetrievalCandidate"}},
+    "clarification": {"$ref": "#/$defs/Clarification"},
+    "coverage": {"$ref": "#/$defs/Coverage"},
+    "resolution": {"$ref": "#/$defs/ClarificationResolution"},
+    "resolved_query": {"type": "string", "minLength": 1, "maxLength": 600},
+    "retrieval_performed": {"type": "boolean"},
+    "generation_performed": {"type": "boolean"},
+    "knowledge_used": {"type": "boolean"},
+    "context_resolution": {"$ref": "#/$defs/ContextResolution"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"answer_disposition": {"enum": ["grounded_answer", "partial_answer"]}}, "required": ["answer_disposition"]},
+      "then": {
+        "required": ["knowledge_scope", "answer_policy_version"],
+        "properties": {
+          "policy_evaluation_performed": {"const": true},
+          "answer_generation_performed": {"const": true},
+          "retrieval_performed": {"const": true},
+          "generation_performed": {"const": true},
+          "knowledge_used": {"const": true},
+          "citations": {"minItems": 1},
+          "citation_anchors": {"minItems": 1},
+          "used_citation_ranks": {"minItems": 1},
+          "retrieval_candidates": {"minItems": 1},
+          "execution": {
+            "required": ["policy", "policy_provider", "policy_model_id", "policy_call_count"],
+            "properties": {"policy": {"const": "performed"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"answer_disposition": {"const": "clarification_required"}}, "required": ["answer_disposition"]},
+      "then": {
+        "required": ["answer_policy_version", "clarification"],
+        "properties": {
+          "policy_evaluation_performed": {"const": true},
+          "answer_generation_performed": {"const": false},
+          "generation_performed": {"const": false},
+          "knowledge_used": {"const": false},
+          "citations": {"maxItems": 0},
+          "citation_anchors": {"maxItems": 0},
+          "used_citation_ranks": {"maxItems": 0},
+          "execution": {
+            "required": ["policy", "policy_provider", "policy_model_id", "policy_call_count"],
+            "properties": {"policy": {"const": "performed"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"answer_disposition": {"const": "insufficient_evidence"}}, "required": ["answer_disposition"]},
+      "then": {
+        "required": ["answer_policy_version"],
+        "properties": {
+          "policy_evaluation_performed": {"const": true},
+          "answer_generation_performed": {"const": false},
+          "retrieval_performed": {"const": true},
+          "generation_performed": {"const": false},
+          "knowledge_used": {"const": false},
+          "refusal": {"const": true},
+          "citations": {"maxItems": 0},
+          "citation_anchors": {"maxItems": 0},
+          "used_citation_ranks": {"maxItems": 0},
+          "execution": {
+            "required": ["policy", "policy_provider", "policy_model_id", "policy_call_count"],
+            "properties": {"policy": {"const": "performed"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"answer_disposition": {"const": "partial_answer"}}, "required": ["answer_disposition"]},
+      "then": {"required": ["coverage"]}
+    },
+    {
+      "if": {"properties": {"answer_disposition": {"const": "controlled_response"}}, "required": ["answer_disposition"]},
+      "then": {
+        "not": {"required": ["answer_policy_version"]},
+        "properties": {
+          "policy_evaluation_performed": {"const": false},
+          "answer_generation_performed": {"const": false},
+          "retrieval_performed": {"const": false},
+          "generation_performed": {"const": false},
+          "knowledge_used": {"const": false},
+          "citations": {"maxItems": 0},
+          "citation_anchors": {"maxItems": 0},
+          "used_citation_ranks": {"maxItems": 0},
+          "retrieval_candidates": {"maxItems": 0},
+          "execution": {
+            "allOf": [
+              {
+                "required": ["policy"],
+                "properties": {"policy": {"const": "not_run"}}
+              },
+              {
+                "not": {
+                  "anyOf": [
+                    {"required": ["policy_provider"]},
+                    {"required": ["policy_model_id"]},
+                    {"required": ["policy_call_count"]}
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "AssistantMessage": {
+      "type": "object",
+      "required": ["role", "content"],
+      "properties": {"role": {"const": "assistant"}, "content": {"type": "string", "minLength": 1}},
+      "additionalProperties": false
+    },
+    "KnowledgeScope": {
+      "type": "object",
+      "required": ["snapshot_id", "manifest_hash", "revision_ids"],
+      "properties": {
+        "snapshot_id": {"type": "string", "minLength": 1},
+        "manifest_hash": {"type": "string", "minLength": 1},
+        "revision_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "ExecutionObservation": {
+      "type": "object",
+      "required": ["policy", "retrieval", "generation", "fallback_used"],
+      "properties": {
+        "policy": {"type": "string", "enum": ["performed", "not_run"]},
+        "policy_provider": {"type": "string", "minLength": 1},
+        "policy_model_id": {"type": "string", "minLength": 1},
+        "policy_call_count": {"type": "integer", "minimum": 1},
+        "scope_shape": {"type": "string", "enum": ["fact_lookup", "branch_dependent", "unknown_target"]},
+        "retrieval_target": {"type": "string", "minLength": 1, "maxLength": 1200},
+        "requested_fact_fields": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "unresolved_branch_dimensions": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "untrusted_instruction_present": {"type": "boolean"},
+        "retrieval": {"$ref": "#/$defs/RetrievalObservation"},
+        "generation": {"$ref": "#/$defs/GenerationObservation"},
+        "fallback_used": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "RetrievalObservation": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"type": "string", "enum": ["performed", "not_run"]},
+        "strategy": {"type": "string", "minLength": 1},
+        "embedding_model": {"type": "string", "minLength": 1},
+        "collection": {"type": "string", "minLength": 1},
+        "candidate_count": {"type": "integer", "minimum": 0}
+      },
+      "allOf": [{"if": {"properties": {"status": {"const": "performed"}}, "required": ["status"]}, "then": {"required": ["strategy", "embedding_model", "collection", "candidate_count"]}}],
+      "additionalProperties": false
+    },
+    "GenerationObservation": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"type": "string", "enum": ["performed", "not_run"]},
+        "provider": {"type": "string", "minLength": 1},
+        "model_id": {"type": "string", "minLength": 1}
+      },
+      "allOf": [{"if": {"properties": {"status": {"const": "performed"}}, "required": ["status"]}, "then": {"required": ["provider", "model_id"]}}],
+      "additionalProperties": false
+    },
+    "Citation": {
+      "type": "object",
+      "required": ["chunk_id", "document_id", "revision_id", "chunk_content_sha256", "rank", "score", "citation_label", "source_locator", "snippet"],
+      "properties": {
+        "chunk_id": {"type": "string", "minLength": 1},
+        "document_id": {"type": "string", "minLength": 1},
+        "revision_id": {"type": "string", "minLength": 1},
+        "chunk_content_sha256": {"type": "string", "minLength": 1},
+        "rank": {"type": "integer", "minimum": 1},
+        "score": {"type": "number"},
+        "citation_label": {"type": "string", "minLength": 1},
+        "source_locator": {"$ref": "https://see-agent.local/contracts/source-locator.schema.json"},
+        "snippet": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "CitationAnchor": {
+      "type": "object",
+      "required": ["start_rune", "end_rune", "citation_ranks"],
+      "properties": {
+        "start_rune": {"type": "integer", "minimum": 0},
+        "end_rune": {"type": "integer", "minimum": 1},
+        "citation_ranks": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 1}}
+      },
+      "additionalProperties": false
+    },
+    "Clarification": {
+      "type": "object",
+      "required": ["missing_dimensions", "question"],
+      "properties": {
+        "missing_dimensions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "question": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "Coverage": {
+      "type": "object",
+      "required": ["requested_count", "supported_count", "uncovered_description"],
+      "properties": {
+        "requested_count": {"type": "integer", "minimum": 1},
+        "supported_count": {"type": "integer", "minimum": 0},
+        "uncovered_description": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "ClarificationResolution": {
+      "type": "object",
+      "required": ["pending_clarification_id", "pending_state_version", "action"],
+      "properties": {
+        "pending_clarification_id": {"type": "string", "minLength": 1},
+        "pending_state_version": {"type": "integer", "minimum": 1},
+        "action": {"type": "string", "enum": ["resolved", "abandoned", "needs_more"]},
+        "resolved_query": {"type": "string", "minLength": 1, "maxLength": 600}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"action": {"const": "resolved"}}, "required": ["action"]},
+          "then": {"required": ["resolved_query"]},
+          "else": {"not": {"required": ["resolved_query"]}}
+        }
+      ],
+      "additionalProperties": false
+    },
+    "RetrievalCandidate": {
+      "type": "object",
+      "required": ["chunk_id", "file_id", "document_id", "revision_id", "chunk_content_sha256", "knowledge_snapshot_id", "rank", "score", "source_locator"],
+      "properties": {
+        "chunk_id": {"type": "string", "minLength": 1},
+        "file_id": {"type": "string", "minLength": 1},
+        "document_id": {"type": "string", "minLength": 1},
+        "revision_id": {"type": "string", "minLength": 1},
+        "chunk_content_sha256": {"type": "string", "minLength": 1},
+        "knowledge_snapshot_id": {"type": "string", "minLength": 1},
+        "rank": {"type": "integer", "minimum": 1},
+        "score": {"type": "number"},
+        "source_locator": {"$ref": "https://see-agent.local/contracts/source-locator.schema.json"}
+      },
+      "additionalProperties": false
+    },
+    "ContextResolution": {
+      "type": "object",
+      "required": ["intent", "route", "kind", "basis_message_ids", "resolver_performed", "confidence"],
+      "properties": {
+        "intent": {"type": "string", "enum": ["knowledge_query", "social_greeting", "social_thanks", "social_farewell", "capability_help", "off_topic", "out_of_scope"]},
+        "route": {"type": "string", "enum": ["rag", "controlled_reply", "clarification"]},
+        "kind": {"type": "string", "enum": ["follow_up", "standalone", "topic_shift", "clarification_required"]},
+        "resolved_query": {"type": "string", "minLength": 1, "maxLength": 600},
+        "basis_message_ids": {"type": "array", "maxItems": 6, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "resolver_provider": {"type": "string", "minLength": 1},
+        "resolver_model_id": {"type": "string", "minLength": 1},
+        "resolver_performed": {"type": "boolean"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    }
+  }
+}

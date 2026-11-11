@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://see-agent.local/contracts/source-locator.schema.json",
+  "title": "SourceLocator",
+  "type": "object",
+  "required": [
+    "source_format"
+  ],
+  "properties": {
+    "source_format": {
+      "type": "string",
+      "enum": [
+        "txt",
+        "md",
+        "json",
+        "pdf",
+        "docx",
+        "xlsx",
+        "pptx"
+      ]
+    },
+    "page_no": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "heading_path": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "paragraph_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sheet_name": {
+      "type": "string"
+    },
+    "cell_range": {
+      "type": "string"
+    },
+    "slide_no": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "slide_title": {
+      "type": "string"
+    },
+    "block_label": {
+      "type": "string"
+    },
+    "json_path": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

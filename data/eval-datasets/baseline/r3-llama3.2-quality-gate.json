@@ -1,0 +1,20 @@
+{
+  "gate_id": "r3-llama3.2-local-v1",
+  "mode": "runtime-local",
+  "model_id": "llama3.2:latest",
+  "generation_config": {
+    "system_prompt_version": "prompt_v1",
+    "temperature": 0.2,
+    "max_output_tokens": 1024
+  },
+  "minimum_passed_count": 26,
+  "minimum_metrics": {
+    "retrieval_recall_at_k": 0.95,
+    "citation_accuracy": 0.95,
+    "refusal_correctness": 1.0,
+    "grounded_correctness": 0.55
+  },
+  "maximum_failure_type_counts": {
+    "unexpected_runtime_error": 0
+  }
+}

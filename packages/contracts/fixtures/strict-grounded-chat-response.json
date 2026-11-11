@@ -1,0 +1,71 @@
+{
+  "request_id": "req_strict_001",
+  "conversation_id": "conv_001",
+  "message_id": "msg_answer_001",
+  "assistant_message": {
+    "role": "assistant",
+    "content": "住宿费用超过800元需要额外审批。"
+  },
+  "answer_disposition": "grounded_answer",
+  "refusal": false,
+  "finish_reason": "stop",
+  "completed_at": "2026-07-24T01:00:00Z",
+  "intent": "knowledge_query",
+  "answer_policy_version": "answer_policy_v1",
+  "policy_evaluation_performed": true,
+  "answer_generation_performed": true,
+  "execution": {
+    "policy": "performed",
+    "retrieval": {
+      "status": "performed",
+      "strategy": "lexical_compat_v1",
+      "embedding_model": "baseline-lexical-embedder",
+      "collection": "see_agent_lexical_v1",
+      "candidate_count": 3
+    },
+    "generation": {
+      "status": "performed",
+      "provider": "openai_compatible",
+      "model_id": "llama3.2:latest"
+    },
+    "fallback_used": false
+  },
+  "knowledge_scope": {
+    "snapshot_id": "snap_20260724_001",
+    "manifest_hash": "sha256:manifest-001",
+    "revision_ids": ["rev_travel_policy_003"]
+  },
+  "citations": [
+    {
+      "chunk_id": "chunk_rev_travel_policy_003_001",
+      "document_id": "doc_travel_policy",
+      "revision_id": "rev_travel_policy_003",
+      "chunk_content_sha256": "sha256:chunk-001",
+      "rank": 1,
+      "score": 0.98,
+      "citation_label": "travel-policy",
+      "source_locator": {"source_format": "md", "heading_path": ["住宿费用"]},
+      "snippet": "超过800元需要额外审批。"
+    }
+  ],
+  "citation_anchors": [
+    {"start_rune": 0, "end_rune": 17, "citation_ranks": [1]}
+  ],
+  "used_citation_ranks": [1],
+  "retrieval_candidates": [
+    {
+      "chunk_id": "chunk_rev_travel_policy_003_001",
+      "file_id": "file_travel_policy",
+      "document_id": "doc_travel_policy",
+      "revision_id": "rev_travel_policy_003",
+      "chunk_content_sha256": "sha256:chunk-001",
+      "knowledge_snapshot_id": "snap_20260724_001",
+      "rank": 1,
+      "score": 0.98,
+      "source_locator": {"source_format": "md", "heading_path": ["住宿费用"]}
+    }
+  ],
+  "retrieval_performed": true,
+  "generation_performed": true,
+  "knowledge_used": true
+}

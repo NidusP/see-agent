@@ -1,0 +1,290 @@
+{
+  "run_id": "runtime-remote-20260806T015132827116Z",
+  "mode": "runtime-remote",
+  "dataset_id": "v1-q1",
+  "dataset_sha256": "sha256:5aef680a679e79afe087f969cdd1bc02814231064d70ce98317aa97ceae11373",
+  "model_id": "qwen3:14b",
+  "config_version": "cfg_005",
+  "retrieval_config_version": "rcfg_001",
+  "retrieval_strategy": "native_dense_v1",
+  "router_policy_version": "conversation_router_v1",
+  "knowledge_snapshot_id": "snap_004",
+  "knowledge_scope": {
+    "snapshot_id": "snap_004",
+    "manifest_hash": "sha256:b537a23e61a026ad66f1eebf1b9a6bb518ea1051258fedc390f227f050ef12f6",
+    "revision_ids": [
+      "rev_0e89b60db82f963ac810",
+      "rev_12b8f8f7a681f9d4fd6a",
+      "rev_5cc8b69151993dbd6632"
+    ],
+    "resolved_at": "2026-08-06T01:48:00Z"
+  },
+  "generation_config": {
+    "system_prompt_version": "prompt_v10",
+    "temperature": 0.0,
+    "max_output_tokens": 1024,
+    "response_style": "concise",
+    "top_p": 1.0
+  },
+  "retrieval": {
+    "mode": "native_dense",
+    "strategy": "native_dense_v1",
+    "embedding_base_url": "http://localhost:11434/v1",
+    "embedding_model": "qwen3-embedding:0.6b",
+    "embedding_dimensions": "1024",
+    "qdrant_collection": "see_agent_dense_qwen_chunks_v1",
+    "top_k": 3,
+    "rerank_enabled": false,
+    "evidence_min_score": 0.51
+  },
+  "started_at": "2026-08-06T01:48:35.942787+00:00",
+  "completed_at": "2026-08-06T01:51:32.848842+00:00",
+  "metrics": {
+    "sample_count": 2,
+    "must_answer_count": 0,
+    "must_refuse_count": 2,
+    "router_sample_count": 0,
+    "format_family_counts": {
+      "md": 2
+    },
+    "task_type_counts": {
+      "answer_disposition": 2
+    },
+    "passed_count": 1,
+    "failed_count": 1,
+    "retrieval_recall_at_k": null,
+    "expected_file_hit_rate": null,
+    "grounded_correctness": null,
+    "citation_accuracy": null,
+    "refusal_correctness": 0.5,
+    "router_resolution_accuracy": null,
+    "answer_disposition_sample_count": 2,
+    "answer_disposition_counts": {
+      "insufficient_evidence": 2
+    },
+    "boundary_tag_counts": {
+      "evidence_absent": 2,
+      "prompt_injection": 1,
+      "role_separation": 2
+    },
+    "evaluation_pair_sample_count": 0,
+    "answer_disposition_accuracy": 1.0,
+    "clarification_dimension_accuracy": null,
+    "unnecessary_clarification_rate": null,
+    "coverage_honesty": null,
+    "clarification_resolution_accuracy": null,
+    "used_citation_rank_accuracy": null,
+    "citation_anchor_fidelity": null,
+    "resolved_query_retrieval_hit_rate": null,
+    "answer_point_recall": null,
+    "forbidden_answer_point_violation_count": 0,
+    "average_latency_ms": 88438.97
+  },
+  "samples": [
+    {
+      "question_id": "a1_q1_069",
+      "task_type": "answer_disposition",
+      "format_family": "md",
+      "must_answer": false,
+      "observed_answer": "",
+      "observed_citations": [],
+      "top_score": null,
+      "evidence_min_score": null,
+      "threshold_decision": "error",
+      "refusal": false,
+      "finish_reason": "error",
+      "latency_ms": 90141.654,
+      "expected_file_hit": null,
+      "citation_locator_hit": null,
+      "answer_point_hit_rate": null,
+      "passed": false,
+      "error": "POST http://127.0.0.1:8000/v1/chat/run returned HTTP 503: {\"error\":{\"code\":\"model_generation_timeout\",\"message\":\"Ollama native model request timed out\",\"retryable\":true}}"
+    },
+    {
+      "question_id": "a1_q1_062",
+      "task_type": "answer_disposition",
+      "format_family": "md",
+      "must_answer": false,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：生产数据导出由哪个角色审批？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [],
+      "top_score": 0.0,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 86736.286,
+      "expected_file_hit": null,
+      "citation_locator_hit": null,
+      "answer_point_hit_rate": null,
+      "answer_disposition": "insufficient_evidence",
+      "observed_context_resolution": null,
+      "router_evaluation": null,
+      "a1_evaluation": {
+        "passed": true,
+        "expected_disposition": "insufficient_evidence",
+        "observed_disposition": "insufficient_evidence",
+        "expected_missing_dimensions": [],
+        "observed_missing_dimensions": null,
+        "expected_used_citation_ranks": [],
+        "observed_used_citation_ranks": [],
+        "citation_anchor_fidelity": true,
+        "expected_coverage": null,
+        "observed_coverage": null,
+        "expected_clarification_resolution": null,
+        "observed_clarification_resolution": null,
+        "expected_resolved_query": null,
+        "observed_resolved_query": null,
+        "forbidden_answer_point_hits": [],
+        "mismatches": [],
+        "primary_failure_type": null
+      },
+      "provider_evidence": {
+        "observation_kind": "runtime_execution",
+        "fallback_used": false,
+        "generation_status": "not_run",
+        "generation_provider": null,
+        "generation_model_id": null,
+        "policy_status": "performed",
+        "policy_provider": "ollama_native",
+        "policy_model_id": "qwen3:14b",
+        "policy_call_count": 2,
+        "retrieval_status": "performed",
+        "retrieval_provider": null,
+        "retrieval_model_id": "qwen3-embedding:0.6b",
+        "observation_complete": false,
+        "quality_eligible": false,
+        "candidate_observation_valid": true
+      },
+      "passed": true,
+      "runtime_observation": {
+        "request_id": "eval_a1_q1_062",
+        "conversation_id": "eval_conv_a1_q1_062",
+        "message_id": "eval_msg_a1_q1_062",
+        "assistant_message": {
+          "role": "assistant",
+          "content": "当前检索到的证据不足以可靠回答这个问题：生产数据导出由哪个角色审批？。请换一种问法，或先补充相关知识文件后再试。"
+        },
+        "citations": [],
+        "citation_anchors": [],
+        "refusal": true,
+        "finish_reason": "refusal",
+        "completed_at": "2026-08-06T01:51:32.722732+00:00",
+        "knowledge_snapshot_id": "snap_004",
+        "knowledge_snapshot_manifest_hash": "sha256:b537a23e61a026ad66f1eebf1b9a6bb518ea1051258fedc390f227f050ef12f6",
+        "freshness_status": "current",
+        "revalidation_outcome": null,
+        "usage": {
+          "prompt_tokens": 1079,
+          "completion_tokens": 97,
+          "total_tokens": 1176
+        },
+        "intent": "knowledge_query",
+        "answer_disposition": "insufficient_evidence",
+        "answer_policy_version": "answer_policy_v3",
+        "policy_evaluation_performed": true,
+        "answer_generation_performed": false,
+        "clarification": null,
+        "coverage": null,
+        "resolution": null,
+        "resolved_query": null,
+        "retrieval_candidates": [],
+        "execution": {
+          "policy": "performed",
+          "policy_provider": "ollama_native",
+          "policy_model_id": "qwen3:14b",
+          "policy_call_count": 2,
+          "retrieval": {
+            "status": "performed",
+            "strategy": "native_dense_v1",
+            "embedding_model": "qwen3-embedding:0.6b",
+            "collection": "see_agent_dense_qwen_chunks_v1",
+            "candidate_count": 3,
+            "top_k": 3,
+            "rerank_enabled": false,
+            "evidence_min_score": 0.51
+          },
+          "generation": {
+            "status": "not_run",
+            "provider": null,
+            "model_id": null
+          },
+          "fallback_used": false
+        },
+        "used_citation_ranks": [],
+        "retrieval_performed": true,
+        "generation_performed": false,
+        "knowledge_used": false,
+        "context_resolution": null
+      },
+      "evidence_min_score": 0.51,
+      "threshold_decision": "refused"
+    }
+  ],
+  "failures": [
+    {
+      "question_id": "a1_q1_069",
+      "failure_type": "unexpected_runtime_error",
+      "observed_answer": "",
+      "observed_citations": [],
+      "notes": "Remote Runtime response was not a real strict execution."
+    }
+  ],
+  "failure_type_counts": {
+    "unexpected_runtime_error": 1
+  },
+  "execution_evidence": "remote_strict_observation_per_sample",
+  "provider_evidence": {
+    "observation_count": 1,
+    "complete_observation_count": 0,
+    "fallback_count": 0,
+    "generation_providers": [],
+    "generation_model_ids": [],
+    "policy_providers": [
+      "ollama_native"
+    ],
+    "policy_model_ids": [
+      "qwen3:14b"
+    ],
+    "comparison_eligible": false,
+    "quality_eligible": false
+  },
+  "evaluation_role": "candidate",
+  "comparison_eligible": false,
+  "quality_eligible": false,
+  "evaluation_purpose": "pre_q1_probe",
+  "conditions_sha256": "sha256:840a6a8014b3db4cae066b4b707f5c9b29edf9f7cbb62cfa6bf8757fe6f14968",
+  "request_conditions": {
+    "dataset": {
+      "id": "v1-q1",
+      "sha256": "sha256:5aef680a679e79afe087f969cdd1bc02814231064d70ce98317aa97ceae11373"
+    },
+    "scope": {
+      "snapshot_id": "snap_004",
+      "manifest_hash": "sha256:b537a23e61a026ad66f1eebf1b9a6bb518ea1051258fedc390f227f050ef12f6",
+      "revision_ids": [
+        "rev_0e89b60db82f963ac810",
+        "rev_12b8f8f7a681f9d4fd6a",
+        "rev_5cc8b69151993dbd6632"
+      ],
+      "resolved_at": "2026-08-06T01:48:00Z"
+    },
+    "retrieval": {
+      "config_version": "rcfg_001",
+      "strategy": "native_dense_v1",
+      "embedding_model": "qwen3-embedding:0.6b",
+      "top_k": 3,
+      "rerank_enabled": false,
+      "evidence_min_score": 0.51
+    },
+    "generation": {
+      "config_version": "cfg_005",
+      "model_id": "qwen3:14b",
+      "system_prompt_version": "prompt_v10",
+      "temperature": 0.0,
+      "max_output_tokens": 1024,
+      "response_style": "concise",
+      "top_p": 1.0,
+      "answer_policy_version": "answer_policy_v3"
+    },
+    "router_policy_version": "conversation_router_v1",
+    "candidate_gate_id": "a1-q1-candidate-v3"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "request_id": "req_revalidate_001",
+  "conversation_id": "conv_001",
+  "message_id": "msg_revalidate_001",
+  "user_query": "之前关于住宿费用的回答还准确吗？",
+  "model_id": "llama3.2:latest",
+  "config_version": "cfg_002",
+  "retrieval_config_version": "rcfg_001",
+  "knowledge_snapshot_id": "snap_20260714_002",
+  "knowledge_scope": {
+    "snapshot_id": "snap_20260714_002",
+    "manifest_hash": "sha256:manifest-002",
+    "revision_ids": ["rev_travel_policy_003"],
+    "resolved_at": "2026-07-14T01:00:00Z"
+  },
+  "answer_mode": "revalidate",
+  "revalidation_context": {
+    "original_message_id": "msg_answer_001",
+    "original_snapshot_id": "snap_20260714_001",
+    "original_answer": "旧回答。",
+    "original_citation_revision_ids": ["rev_travel_policy_002"],
+    "related_update_event_ids": ["event_policy_replaced_001"]
+  },
+  "response_overrides": {
+    "retrieval_strategy": "lexical_compat_v1",
+    "embedding_model": "baseline-lexical-embedder"
+  },
+  "stream": false,
+  "messages": []
+}

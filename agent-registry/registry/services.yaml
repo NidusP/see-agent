@@ -1,0 +1,88 @@
+version: 1
+services:
+  - name: web
+    path: apps/web
+    runtime: nextjs
+    owner: frontend
+    dev_command: "pnpm run dev"
+    test_command: "pnpm run typecheck && pnpm run lint && pnpm run build"
+    default_port: 3000
+    healthcheck: /api/health
+    depends_on:
+      - backend
+  - name: backend
+    path: services/backend-go
+    runtime: go
+    owner: backend
+    dev_command: "/Users/populus/.local/go1.26.4/bin/go run ./cmd/api"
+    test_command: "/Users/populus/.local/go1.26.4/bin/go test ./..."
+    default_port: 8080
+    healthcheck: /healthz
+    depends_on:
+      - postgres
+      - redis
+      - minio
+      - qdrant
+      - ai-runtime
+  - name: ai-runtime
+    path: services/ai-runtime-py
+    runtime: python
+    owner: ai
+    dev_command: "python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    test_command: "python3 -m pytest"
+    default_port: 8000
+    healthcheck: /healthz
+    depends_on:
+      - qdrant
+      - minio
+      - local-model
+  - name: postgres
+    path: infra/compose
+    runtime: docker
+    owner: platform
+    dev_command: "docker compose -f infra/compose/docker-compose.yml up -d postgres"
+    test_command: "make infra-check"
+    default_port: 15432
+    healthcheck: tcp://localhost:15432
+    depends_on: []
+  - name: redis
+    path: infra/compose
+    runtime: docker
+    owner: platform
+    dev_command: "docker compose -f infra/compose/docker-compose.yml up -d redis"
+    test_command: "make infra-check"
+    default_port: 16379
+    healthcheck: tcp://localhost:16379
+    depends_on: []
+  - name: minio
+    path: infra/compose
+    runtime: docker
+    owner: platform
+    dev_command: "docker compose -f infra/compose/docker-compose.yml up -d minio"
+    test_command: "make infra-check"
+    default_port: 19000
+    healthcheck: http://localhost:19000/minio/health/live
+    depends_on: []
+  - name: qdrant
+    path: infra/compose
+    runtime: docker
+    owner: platform
+    dev_command: "docker compose -f infra/compose/docker-compose.yml up -d qdrant"
+    test_command: "make infra-check"
+    default_port: 16333
+    healthcheck: http://localhost:16333/healthz
+    depends_on: []
+  - name: local-model
+    path: services/ai-runtime-py
+    runtime: local-llm
+    owner: ai
+    dev_command: "OLLAMA_HOST=0.0.0.0:11434 ollama serve"
+    test_command: "N/A"
+    default_port: 11434
+    healthcheck: http://localhost:11434
+    depends_on: []
+notes:
+  - "All application-layer model calls should remain OpenAI-compatible."
+  - "Use pnpm with the apps/web/pnpm-lock.yaml lockfile for Web dependencies."
+  - "Local model default is native Ollama; switch to vLLM only behind the same OpenAI-compatible boundary."
+  - "Use RUNNING=1 make infra-check after make infra-up to validate running infra containers."

@@ -1,0 +1,305 @@
+{
+  "run_id": "runtime-remote-20260724T102018611498Z",
+  "mode": "runtime-remote",
+  "dataset_id": "snap_001-local-rag-handbook-v1",
+  "dataset_sha256": "sha256:dae6032471b0e477de5ab644a3aff8891dd42fdaa2fc5a5b9b78f41c2776252d",
+  "model_id": "llama3.2:latest",
+  "config_version": "cfg_004",
+  "retrieval_config_version": "rcfg_lexical_v2",
+  "retrieval_strategy": "lexical_compat_v1",
+  "knowledge_snapshot_id": "snap_001",
+  "knowledge_scope": {
+    "snapshot_id": "snap_001",
+    "manifest_hash": "sha256:2dd9198e749ae3464a369e0c147d6a1a302c7e02b599ea76f55b3ca14886bce7",
+    "revision_ids": [
+      "rev_183e35675e620babe86f"
+    ],
+    "resolved_at": "2026-07-24T00:00:00Z"
+  },
+  "generation_config": {
+    "system_prompt_version": "prompt_v2",
+    "temperature": 0.2,
+    "max_output_tokens": 1024
+  },
+  "retrieval": {
+    "mode": "lexical",
+    "strategy": "lexical_compat_v1",
+    "embedding_base_url": null,
+    "embedding_model": "baseline-lexical-embedder",
+    "embedding_dimensions": null,
+    "qdrant_collection": "see_agent_chunks",
+    "top_k": 6,
+    "rerank_enabled": true,
+    "evidence_min_score": 0.15
+  },
+  "started_at": "2026-07-24T10:20:17.095852+00:00",
+  "completed_at": "2026-07-24T10:20:18.611838+00:00",
+  "metrics": {
+    "sample_count": 4,
+    "must_answer_count": 3,
+    "must_refuse_count": 1,
+    "format_family_counts": {
+      "md": 3,
+      "must_refuse": 1
+    },
+    "task_type_counts": {
+      "insufficient_evidence": 1,
+      "policy_flow_answer": 1,
+      "single_source_fact_lookup": 2
+    },
+    "passed_count": 0,
+    "failed_count": 4,
+    "retrieval_recall_at_k": 0.0,
+    "expected_file_hit_rate": 0.0,
+    "grounded_correctness": 0.0,
+    "citation_accuracy": 0.0,
+    "refusal_correctness": 0.0,
+    "average_latency_ms": 378.746
+  },
+  "samples": [
+    {
+      "question_id": "local_rag_001",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "",
+      "observed_citations": [],
+      "top_score": null,
+      "evidence_min_score": null,
+      "threshold_decision": "error",
+      "refusal": false,
+      "finish_reason": "error",
+      "latency_ms": 374.987,
+      "expected_file_hit": false,
+      "citation_locator_hit": false,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "error": "POST http://127.0.0.1:8000/v1/chat/run returned HTTP 502: "
+    },
+    {
+      "question_id": "local_rag_002",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "",
+      "observed_citations": [],
+      "top_score": null,
+      "evidence_min_score": null,
+      "threshold_decision": "error",
+      "refusal": false,
+      "finish_reason": "error",
+      "latency_ms": 397.869,
+      "expected_file_hit": false,
+      "citation_locator_hit": false,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "error": "POST http://127.0.0.1:8000/v1/chat/run returned HTTP 502: "
+    },
+    {
+      "question_id": "local_rag_003",
+      "task_type": "policy_flow_answer",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "",
+      "observed_citations": [],
+      "top_score": null,
+      "evidence_min_score": null,
+      "threshold_decision": "error",
+      "refusal": false,
+      "finish_reason": "error",
+      "latency_ms": 351.657,
+      "expected_file_hit": false,
+      "citation_locator_hit": false,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "error": "POST http://127.0.0.1:8000/v1/chat/run returned HTTP 502: "
+    },
+    {
+      "question_id": "local_rag_004",
+      "task_type": "insufficient_evidence",
+      "format_family": "must_refuse",
+      "must_answer": false,
+      "observed_answer": "",
+      "observed_citations": [],
+      "top_score": null,
+      "evidence_min_score": null,
+      "threshold_decision": "error",
+      "refusal": false,
+      "finish_reason": "error",
+      "latency_ms": 390.471,
+      "expected_file_hit": null,
+      "citation_locator_hit": null,
+      "answer_point_hit_rate": null,
+      "passed": false,
+      "error": "POST http://127.0.0.1:8000/v1/chat/run returned HTTP 502: "
+    }
+  ],
+  "failures": [
+    {
+      "question_id": "local_rag_001",
+      "failure_type": "unexpected_runtime_error",
+      "observed_answer": "",
+      "observed_citations": [],
+      "notes": "Remote Runtime response was not a real strict execution."
+    },
+    {
+      "question_id": "local_rag_002",
+      "failure_type": "unexpected_runtime_error",
+      "observed_answer": "",
+      "observed_citations": [],
+      "notes": "Remote Runtime response was not a real strict execution."
+    },
+    {
+      "question_id": "local_rag_003",
+      "failure_type": "unexpected_runtime_error",
+      "observed_answer": "",
+      "observed_citations": [],
+      "notes": "Remote Runtime response was not a real strict execution."
+    },
+    {
+      "question_id": "local_rag_004",
+      "failure_type": "unexpected_runtime_error",
+      "observed_answer": "",
+      "observed_citations": [],
+      "notes": "Remote Runtime response was not a real strict execution."
+    }
+  ],
+  "failure_type_counts": {
+    "unexpected_runtime_error": 4
+  },
+  "execution_evidence": "remote_strict_observation_per_sample",
+  "quality_experiment": {
+    "experiment_id": "qexp_002",
+    "role": "baseline",
+    "conditions_sha256": "sha256:49329309f4961fac29a721210f55cc25f339c638594ea4398f782ae95ee17f22"
+  },
+  "quality_gate": {
+    "gate_id": "snap-001-local-rag-handbook-v1",
+    "passed": false,
+    "checks": [
+      {
+        "name": "mode",
+        "passed": true,
+        "expected": "runtime-remote",
+        "actual": "runtime-remote",
+        "reason": "matched expected value"
+      },
+      {
+        "name": "model_id",
+        "passed": true,
+        "expected": "llama3.2:latest",
+        "actual": "llama3.2:latest",
+        "reason": "matched expected value"
+      },
+      {
+        "name": "generation_config",
+        "passed": true,
+        "expected": {
+          "system_prompt_version": "prompt_v2",
+          "temperature": 0.2,
+          "max_output_tokens": 1024
+        },
+        "actual": {
+          "system_prompt_version": "prompt_v2",
+          "temperature": 0.2,
+          "max_output_tokens": 1024
+        },
+        "reason": "matched expected value"
+      },
+      {
+        "name": "passed_count",
+        "passed": false,
+        "expected": {
+          "minimum": 4
+        },
+        "actual": 0,
+        "reason": "0 is below minimum 4"
+      },
+      {
+        "name": "metrics.retrieval_recall_at_k",
+        "passed": false,
+        "expected": {
+          "minimum": 1.0
+        },
+        "actual": 0.0,
+        "reason": "0.0 is below minimum 1.0"
+      },
+      {
+        "name": "metrics.citation_accuracy",
+        "passed": false,
+        "expected": {
+          "minimum": 1.0
+        },
+        "actual": 0.0,
+        "reason": "0.0 is below minimum 1.0"
+      },
+      {
+        "name": "metrics.refusal_correctness",
+        "passed": false,
+        "expected": {
+          "minimum": 1.0
+        },
+        "actual": 0.0,
+        "reason": "0.0 is below minimum 1.0"
+      },
+      {
+        "name": "metrics.grounded_correctness",
+        "passed": false,
+        "expected": {
+          "minimum": 1.0
+        },
+        "actual": 0.0,
+        "reason": "0.0 is below minimum 1.0"
+      },
+      {
+        "name": "failure_type_counts.unexpected_runtime_error",
+        "passed": false,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 4,
+        "reason": "4 exceeds maximum 0"
+      },
+      {
+        "name": "failure_type_counts.retrieval_miss",
+        "passed": true,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 0,
+        "reason": "0 is within maximum 0"
+      },
+      {
+        "name": "failure_type_counts.citation_mismatch",
+        "passed": true,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 0,
+        "reason": "0 is within maximum 0"
+      },
+      {
+        "name": "failure_type_counts.answer_point_miss",
+        "passed": true,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 0,
+        "reason": "0 is within maximum 0"
+      },
+      {
+        "name": "failure_type_counts.refusal_policy_failure",
+        "passed": true,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 0,
+        "reason": "0 is within maximum 0"
+      }
+    ]
+  },
+  "backend_registration": {
+    "status": "failed",
+    "error": "POST http://127.0.0.1:8080/api/eval/reports returned HTTP 502: "
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "probe_version": "provider-stability-v1",
+  "run_id": "provider-stability-20260806T030846023063Z",
+  "started_at": "2026-08-06T03:08:46.025963Z",
+  "evaluation_purpose": "provider_stability_probe",
+  "quality_eligible": false,
+  "fallback_used": false,
+  "samples": [],
+  "configuration": {
+    "provider": "ollama_native",
+    "model_id": "qwen3:14b",
+    "endpoint": "http://127.0.0.1:11434/v1",
+    "timeout_seconds": 90.0,
+    "repetitions": 3,
+    "include_stream": true
+  },
+  "failure": {
+    "code": "model_provider_unreachable",
+    "message": "model provider could not be reached"
+  },
+  "finished_at": "2026-08-06T03:08:46.918200Z",
+  "passed": false,
+  "summary": {
+    "sample_count": 0,
+    "success_count": 0,
+    "failure_count": 0,
+    "completion_latency_min_ms": null,
+    "completion_latency_median_ms": null,
+    "completion_latency_p95_ms": null,
+    "first_event_latency_median_ms": null
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "gate_id": "snap-002-qwen3-14b-dense-prompt-v5-q1",
+  "mode": "runtime-remote",
+  "model_id": "qwen3:14b",
+  "generation_config": {
+    "system_prompt_version": "prompt_v5",
+    "temperature": 0.2,
+    "max_output_tokens": 1024,
+    "response_style": "concise",
+    "top_p": 1.0
+  },
+  "minimum_passed_count": 4,
+  "minimum_metrics": {
+    "retrieval_recall_at_k": 1.0,
+    "citation_accuracy": 1.0,
+    "refusal_correctness": 1.0,
+    "grounded_correctness": 1.0
+  },
+  "maximum_failure_type_counts": {
+    "unexpected_runtime_error": 0,
+    "retrieval_miss": 0,
+    "citation_mismatch": 0,
+    "answer_point_miss": 0,
+    "refusal_policy_failure": 0
+  }
+}

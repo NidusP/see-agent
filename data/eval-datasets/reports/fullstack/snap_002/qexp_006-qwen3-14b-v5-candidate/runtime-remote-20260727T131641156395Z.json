@@ -1,0 +1,314 @@
+{
+  "run_id": "runtime-remote-20260727T131641156395Z",
+  "mode": "runtime-remote",
+  "dataset_id": "snap_002-qwen-dense-handbook-v1",
+  "dataset_sha256": "sha256:4520ff618cc43d558c938ad6d4acbe20365f51483321c51d16de0530af2fc03a",
+  "model_id": "qwen3:14b",
+  "config_version": "cfg_005",
+  "retrieval_config_version": "rcfg_002",
+  "retrieval_strategy": "native_dense_v1",
+  "knowledge_snapshot_id": "snap_002",
+  "knowledge_scope": {
+    "snapshot_id": "snap_002",
+    "manifest_hash": "sha256:1413978f767ec90ba7212584a56892c723cd4fb0feeeae7ff29b9f4e153815f6",
+    "revision_ids": [
+      "rev_183e35675e620babe86f",
+      "rev_8233a8076ade246b14e4"
+    ],
+    "resolved_at": "2026-07-25T04:15:29Z"
+  },
+  "generation_config": {
+    "system_prompt_version": "prompt_v5",
+    "temperature": 0.2,
+    "max_output_tokens": 1024,
+    "response_style": "concise",
+    "top_p": 1.0
+  },
+  "retrieval": {
+    "mode": "native_dense",
+    "strategy": "native_dense_v1",
+    "embedding_base_url": "http://localhost:11434/v1",
+    "embedding_model": "qwen3-embedding:0.6b",
+    "embedding_dimensions": "1024",
+    "qdrant_collection": "see_agent_dense_qwen_chunks_v1",
+    "top_k": 3,
+    "rerank_enabled": false,
+    "evidence_min_score": 0.51
+  },
+  "started_at": "2026-07-27T13:10:37.417656+00:00",
+  "completed_at": "2026-07-27T13:16:41.159376+00:00",
+  "metrics": {
+    "sample_count": 4,
+    "must_answer_count": 3,
+    "must_refuse_count": 1,
+    "format_family_counts": {
+      "md": 3,
+      "must_refuse": 1
+    },
+    "task_type_counts": {
+      "insufficient_evidence": 1,
+      "policy_flow_answer": 2,
+      "single_source_fact_lookup": 1
+    },
+    "passed_count": 0,
+    "failed_count": 4,
+    "retrieval_recall_at_k": 0.0,
+    "expected_file_hit_rate": 0.0,
+    "grounded_correctness": 0.0,
+    "citation_accuracy": 0.0,
+    "refusal_correctness": 0.0,
+    "average_latency_ms": 90933.891
+  },
+  "samples": [
+    {
+      "question_id": "dense_handbook_001",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "",
+      "observed_citations": [],
+      "top_score": null,
+      "evidence_min_score": null,
+      "threshold_decision": "error",
+      "refusal": false,
+      "finish_reason": "error",
+      "latency_ms": 90336.98,
+      "expected_file_hit": false,
+      "citation_locator_hit": false,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "error": "POST http://127.0.0.1:8000/v1/chat/run returned HTTP 503: {\"error\":{\"code\":\"model_request_failed\",\"message\":\"OpenAI-compatible model request failed: timed out\",\"retryable\":true}}"
+    },
+    {
+      "question_id": "dense_handbook_002",
+      "task_type": "policy_flow_answer",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "",
+      "observed_citations": [],
+      "top_score": null,
+      "evidence_min_score": null,
+      "threshold_decision": "error",
+      "refusal": false,
+      "finish_reason": "error",
+      "latency_ms": 91680.89,
+      "expected_file_hit": false,
+      "citation_locator_hit": false,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "error": "POST http://127.0.0.1:8000/v1/chat/run returned HTTP 503: {\"error\":{\"code\":\"model_request_failed\",\"message\":\"OpenAI-compatible model request failed: timed out\",\"retryable\":true}}"
+    },
+    {
+      "question_id": "dense_handbook_003",
+      "task_type": "policy_flow_answer",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "",
+      "observed_citations": [],
+      "top_score": null,
+      "evidence_min_score": null,
+      "threshold_decision": "error",
+      "refusal": false,
+      "finish_reason": "error",
+      "latency_ms": 91125.299,
+      "expected_file_hit": false,
+      "citation_locator_hit": false,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "error": "POST http://127.0.0.1:8000/v1/chat/run returned HTTP 503: {\"error\":{\"code\":\"model_request_failed\",\"message\":\"OpenAI-compatible model request failed: timed out\",\"retryable\":true}}"
+    },
+    {
+      "question_id": "dense_handbook_004",
+      "task_type": "insufficient_evidence",
+      "format_family": "must_refuse",
+      "must_answer": false,
+      "observed_answer": "",
+      "observed_citations": [],
+      "top_score": null,
+      "evidence_min_score": null,
+      "threshold_decision": "error",
+      "refusal": false,
+      "finish_reason": "error",
+      "latency_ms": 90592.395,
+      "expected_file_hit": null,
+      "citation_locator_hit": null,
+      "answer_point_hit_rate": null,
+      "passed": false,
+      "error": "POST http://127.0.0.1:8000/v1/chat/run returned HTTP 503: {\"error\":{\"code\":\"model_request_failed\",\"message\":\"OpenAI-compatible model request failed: timed out\",\"retryable\":true}}"
+    }
+  ],
+  "failures": [
+    {
+      "question_id": "dense_handbook_001",
+      "failure_type": "unexpected_runtime_error",
+      "observed_answer": "",
+      "observed_citations": [],
+      "notes": "Remote Runtime response was not a real strict execution."
+    },
+    {
+      "question_id": "dense_handbook_002",
+      "failure_type": "unexpected_runtime_error",
+      "observed_answer": "",
+      "observed_citations": [],
+      "notes": "Remote Runtime response was not a real strict execution."
+    },
+    {
+      "question_id": "dense_handbook_003",
+      "failure_type": "unexpected_runtime_error",
+      "observed_answer": "",
+      "observed_citations": [],
+      "notes": "Remote Runtime response was not a real strict execution."
+    },
+    {
+      "question_id": "dense_handbook_004",
+      "failure_type": "unexpected_runtime_error",
+      "observed_answer": "",
+      "observed_citations": [],
+      "notes": "Remote Runtime response was not a real strict execution."
+    }
+  ],
+  "failure_type_counts": {
+    "unexpected_runtime_error": 4
+  },
+  "execution_evidence": "remote_strict_observation_per_sample",
+  "quality_experiment": {
+    "experiment_id": "qexp_006",
+    "role": "candidate",
+    "conditions_sha256": "sha256:978374c67c93ba9b4b2873ab748aacd09cc8e89a9a2a038da854c9cfd4781771"
+  },
+  "quality_gate": {
+    "gate_id": "snap-002-qwen3-14b-dense-prompt-v5-q1",
+    "passed": false,
+    "checks": [
+      {
+        "name": "mode",
+        "passed": true,
+        "expected": "runtime-remote",
+        "actual": "runtime-remote",
+        "reason": "matched expected value"
+      },
+      {
+        "name": "model_id",
+        "passed": true,
+        "expected": "qwen3:14b",
+        "actual": "qwen3:14b",
+        "reason": "matched expected value"
+      },
+      {
+        "name": "generation_config",
+        "passed": true,
+        "expected": {
+          "system_prompt_version": "prompt_v5",
+          "temperature": 0.2,
+          "max_output_tokens": 1024,
+          "response_style": "concise",
+          "top_p": 1.0
+        },
+        "actual": {
+          "system_prompt_version": "prompt_v5",
+          "temperature": 0.2,
+          "max_output_tokens": 1024,
+          "response_style": "concise",
+          "top_p": 1.0
+        },
+        "reason": "matched expected value"
+      },
+      {
+        "name": "passed_count",
+        "passed": false,
+        "expected": {
+          "minimum": 4
+        },
+        "actual": 0,
+        "reason": "0 is below minimum 4"
+      },
+      {
+        "name": "metrics.retrieval_recall_at_k",
+        "passed": false,
+        "expected": {
+          "minimum": 1.0
+        },
+        "actual": 0.0,
+        "reason": "0.0 is below minimum 1.0"
+      },
+      {
+        "name": "metrics.citation_accuracy",
+        "passed": false,
+        "expected": {
+          "minimum": 1.0
+        },
+        "actual": 0.0,
+        "reason": "0.0 is below minimum 1.0"
+      },
+      {
+        "name": "metrics.refusal_correctness",
+        "passed": false,
+        "expected": {
+          "minimum": 1.0
+        },
+        "actual": 0.0,
+        "reason": "0.0 is below minimum 1.0"
+      },
+      {
+        "name": "metrics.grounded_correctness",
+        "passed": false,
+        "expected": {
+          "minimum": 1.0
+        },
+        "actual": 0.0,
+        "reason": "0.0 is below minimum 1.0"
+      },
+      {
+        "name": "failure_type_counts.unexpected_runtime_error",
+        "passed": false,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 4,
+        "reason": "4 exceeds maximum 0"
+      },
+      {
+        "name": "failure_type_counts.retrieval_miss",
+        "passed": true,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 0,
+        "reason": "0 is within maximum 0"
+      },
+      {
+        "name": "failure_type_counts.citation_mismatch",
+        "passed": true,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 0,
+        "reason": "0 is within maximum 0"
+      },
+      {
+        "name": "failure_type_counts.answer_point_miss",
+        "passed": true,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 0,
+        "reason": "0 is within maximum 0"
+      },
+      {
+        "name": "failure_type_counts.refusal_policy_failure",
+        "passed": true,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 0,
+        "reason": "0 is within maximum 0"
+      }
+    ]
+  },
+  "backend_registration": {
+    "status": "registered",
+    "report_id": "runtime-remote-20260727T131641156395Z",
+    "eval_report_endpoint": "http://127.0.0.1:8080/api/eval/reports",
+    "experiment_report_endpoint": "http://127.0.0.1:8080/api/admin/quality/experiments/qexp_006/reports"
+  }
+}

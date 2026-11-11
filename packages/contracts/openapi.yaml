@@ -1,0 +1,3299 @@
+openapi: 3.1.0
+info:
+  title: see-agent API
+  version: 0.4.0-f0
+  description: >
+    Single-agent V1 external product API contract for the private web Q&A product.
+    F0 freezes fail-closed execution: completed messages are real completed dispositions,
+    while dependency and contract failures use a stable error envelope and never imply citations.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: auth
+  - name: chat
+  - name: knowledge-base
+  - name: agent-config
+  - name: eval
+  - name: logs
+paths:
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: Login for internal single-tenant users
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login succeeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      summary: Logout the current user
+      operationId: logout
+      responses:
+        "200":
+          description: Logout succeeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /api/auth/me:
+    get:
+      tags: [auth]
+      summary: Get the authenticated internal user and role
+      operationId: getAuthenticatedUser
+      responses:
+        "200":
+          description: Authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /api/chat/conversations:
+    get:
+      tags: [chat]
+      summary: List conversations
+      operationId: listConversations
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/NextCursor"
+      responses:
+        "200":
+          description: Conversation list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationListResponse"
+    post:
+      tags: [chat]
+      summary: Create a conversation
+      operationId: createConversation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateConversationRequest"
+      responses:
+        "201":
+          description: Conversation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationEnvelope"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/chat/conversations/{conversation_id}:
+    get:
+      tags: [chat]
+      summary: Get a conversation by id
+      operationId: getConversation
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+      responses:
+        "200":
+          description: Conversation detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationDetailResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    patch:
+      tags: [chat]
+      summary: Rename a conversation owned by the current user
+      operationId: updateConversationTitle
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateConversationTitleRequest"
+      responses:
+        "200":
+          description: Conversation renamed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationEnvelope"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/chat/conversations/{conversation_id}/messages:
+    post:
+      tags: [chat]
+      summary: Send a user message and request an assistant answer
+      operationId: createMessage
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMessageRequest"
+      responses:
+        "200":
+          description: Non-streaming answer response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageExchangeResponse"
+            text/event-stream:
+              schema:
+                type: string
+              examples:
+                assistant-stream:
+                  value: |
+                    event: message.started
+                    data: {"user_message":{"message_id":"msg_user_123","role":"user","content":"hello","status":"completed"},"assistant_message":{"message_id":"msg_123","role":"assistant","content":"","status":"streaming"}}
+
+                    event: message.delta
+                    data: {"message_id":"msg_123","delta":"hello"}
+
+                    event: message.completed
+                    data: {"user_message":{"message_id":"msg_user_123","role":"user","content":"hello","status":"completed"},"assistant_message":{"message_id":"msg_123","role":"assistant","content":"hello","status":"completed","finish_reason":"stop","citations_count":1}}
+
+                    # terminal failure example; mutually exclusive with message.completed
+                    event: message.error
+                    data: {"error":{"code":"dependency_unavailable","message":"当前无法安全完成回答，请稍后重试。","retryable":true,"request_id":"req_123","stage":"runtime_call"}}
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "502":
+          $ref: "#/components/responses/RuntimeContractError"
+        "503":
+          $ref: "#/components/responses/DependencyUnavailableError"
+  /api/chat/conversations/{conversation_id}/sources/{message_id}:
+    get:
+      tags: [chat]
+      summary: Get source references for an assistant message
+      operationId: getMessageSources
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+        - $ref: "#/components/parameters/MessageId"
+      responses:
+        "200":
+          description: Message sources
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageSourcesResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/chat/conversations/{conversation_id}/messages/{message_id}/revalidate:
+    post:
+      tags: [chat]
+      summary: Revalidate a historical assistant answer against the latest published knowledge snapshot
+      operationId: revalidateMessage
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+        - $ref: "#/components/parameters/MessageId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevalidateMessageRequest"
+      responses:
+        "202":
+          description: Revalidation accepted; the historical answer is never modified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevalidationRunEnvelope"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+  /api/chat/conversations/{conversation_id}/revalidations/{revalidation_id}:
+    get:
+      tags: [chat]
+      summary: Get a historical answer revalidation result
+      operationId: getRevalidation
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+        - name: revalidation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Revalidation status and, once complete, its independent answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevalidationRunEnvelope"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/kb/files:
+    get:
+      tags: [knowledge-base]
+      summary: List knowledge files
+      operationId: listKnowledgeFiles
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/NextCursor"
+        - $ref: "#/components/parameters/FileStatus"
+        - $ref: "#/components/parameters/SourceFormat"
+      responses:
+        "200":
+          description: Knowledge file list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeFileListResponse"
+    post:
+      tags: [knowledge-base]
+      summary: Upload a knowledge file and create an ingestion task
+      operationId: uploadKnowledgeFile
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UploadKnowledgeFileRequest"
+      responses:
+        "202":
+          description: Upload accepted and ingestion queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadKnowledgeFileResponse"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/kb/files/{file_id}:
+    get:
+      tags: [knowledge-base]
+      summary: Get a knowledge file by id
+      operationId: getKnowledgeFile
+      parameters:
+        - $ref: "#/components/parameters/FileId"
+      responses:
+        "200":
+          description: Knowledge file detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeFileDetailResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      tags: [knowledge-base]
+      summary: Delete a knowledge file and its indexed artifacts
+      operationId: deleteKnowledgeFile
+      parameters:
+        - $ref: "#/components/parameters/FileId"
+      responses:
+        "200":
+          description: File deletion accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteKnowledgeFileResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/kb/files/{file_id}/reindex:
+    post:
+      tags: [knowledge-base]
+      summary: Reindex a knowledge file
+      operationId: reindexKnowledgeFile
+      parameters:
+        - $ref: "#/components/parameters/FileId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReindexKnowledgeFileRequest"
+      responses:
+        "202":
+          description: Reindex task accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestionTaskEnvelope"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/kb/files/{file_id}/chunks:
+    get:
+      tags: [knowledge-base]
+      summary: Inspect indexed chunks for a file
+      operationId: listKnowledgeFileChunks
+      parameters:
+        - $ref: "#/components/parameters/FileId"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Chunk list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeFileChunksResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/kb/documents:
+    get:
+      tags: [knowledge-base]
+      summary: List logical knowledge documents and their current revision summaries (K4)
+      operationId: listKnowledgeDocuments
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/NextCursor"
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/KnowledgeDocumentStatus"
+      responses:
+        "200":
+          description: Logical document list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeDocumentListResponse"
+    post:
+      tags: [knowledge-base]
+      summary: Upload initial immutable revision and create a logical document (K4)
+      operationId: createKnowledgeDocument
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UploadKnowledgeDocumentRequest"
+      responses:
+        "202":
+          description: Document created and initial revision queued for K3 projection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeRevisionUploadResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/kb/documents/{document_id}:
+    get:
+      tags: [knowledge-base]
+      summary: Get a logical document, its immutable revisions and delivery summaries (K4)
+      operationId: getKnowledgeDocument
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      responses:
+        "200":
+          description: Logical document detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeDocumentDetailResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      tags: [knowledge-base]
+      summary: System-admin soft-delete of a disabled document after the new-only snapshot passes onboarding (K9-R2)
+      operationId: deleteKnowledgeDocument
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Document soft-deleted; historical evidence is retained
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeLifecycleMutationResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+  /api/kb/documents/{document_id}/retirement-readiness:
+    get:
+      tags: [knowledge-base]
+      summary: Get the current-snapshot onboarding proof required for system-admin retirement (K9-R2)
+      operationId: getKnowledgeRetirementReadiness
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      responses:
+        "200":
+          description: Current retirement readiness and blockers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeRetirementReadinessResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/kb/documents/{document_id}/revisions:
+    post:
+      tags: [knowledge-base]
+      summary: Upload a replacement immutable revision for an active document (K4)
+      operationId: createKnowledgeRevision
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UploadKnowledgeRevisionRequest"
+      responses:
+        "202":
+          description: Replacement revision queued for K3 projection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeRevisionUploadResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/kb/revisions/{revision_id}/publish:
+    post:
+      tags: [knowledge-base]
+      summary: Publish a ready revision as the next active snapshot (K4)
+      operationId: publishKnowledgeRevision
+      parameters:
+        - name: revision_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Revision published in a new active snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeLifecycleMutationResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+  /api/kb/documents/{document_id}/disable:
+    post:
+      tags: [knowledge-base]
+      summary: System-admin disable after a replacement-inclusive snapshot passes onboarding (K9-R2)
+      operationId: disableKnowledgeDocument
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Document removed from future visible knowledge
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeLifecycleMutationResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+  /api/kb/updates:
+    get:
+      tags: [knowledge-base]
+      summary: List immutable knowledge update events and freshness scan progress
+      operationId: listKnowledgeUpdates
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/NextCursor"
+        - $ref: "#/components/parameters/DocumentIdQuery"
+      responses:
+        "200":
+          description: Knowledge update calendar
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeUpdateListResponse"
+  /api/kb/snapshots/{snapshot_id}:
+    get:
+      tags: [knowledge-base]
+      summary: Get an immutable knowledge snapshot manifest
+      operationId: getKnowledgeSnapshot
+      parameters:
+        - $ref: "#/components/parameters/SnapshotId"
+      responses:
+        "200":
+          description: Knowledge snapshot with immutable members
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeSnapshotDetailResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/agent/config:
+    get:
+      tags: [agent-config]
+      summary: Get the active agent config
+      operationId: getAgentConfig
+      responses:
+        "200":
+          description: Active agent config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentConfigEnvelope"
+    put:
+      tags: [agent-config]
+      summary: Create an immutable agent config candidate
+      description: Creates an immutable candidate without changing the active config pointer; a separate publish operation activates a candidate.
+      operationId: updateAgentConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAgentConfigRequest"
+      responses:
+        "200":
+          description: Immutable agent config candidate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentConfigEnvelope"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/agent/retrieval-config:
+    get:
+      tags: [agent-config]
+      summary: Get the active retrieval config
+      operationId: getRetrievalConfig
+      responses:
+        "200":
+          description: Active retrieval config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetrievalConfigEnvelope"
+    put:
+      tags: [agent-config]
+      summary: Create a new retrieval config version
+      operationId: updateRetrievalConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRetrievalConfigRequest"
+      responses:
+        "200":
+          description: New retrieval config version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetrievalConfigEnvelope"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/agent/config/versions:
+    get:
+      tags: [agent-config]
+      summary: List Agent and retrieval config versions
+      operationId: listConfigVersions
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/NextCursor"
+      responses:
+        "200":
+          description: Config history lists in creation order; each kind is compared within its own list.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigVersionListResponse"
+  /api/admin/evidence/executions:
+    get:
+      tags: [logs]
+      summary: List durable assistant execution evidence for administrators
+      operationId: listExecutionEvidence
+      parameters:
+        - $ref: "#/components/parameters/ConversationIdQuery"
+        - name: snapshot_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: revision_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Durable execution evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageExecutionEvidenceListResponse"
+  /api/admin/evidence/messages/{message_id}:
+    get:
+      tags: [logs]
+      summary: Get durable execution evidence for one assistant message
+      operationId: getMessageExecutionEvidence
+      parameters:
+        - $ref: "#/components/parameters/MessageId"
+      responses:
+        "200":
+          description: Execution evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageExecutionEvidenceEnvelope"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/admin/evidence/deliveries:
+    get:
+      tags: [logs]
+      summary: List authoritative knowledge outbox delivery evidence
+      operationId: listKnowledgeDeliveryEvidence
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, streamed, indexing, retry, delivered, dead_letter]
+        - $ref: "#/components/parameters/DocumentIdQuery"
+        - name: revision_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Delivery evidence page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeDeliveryEvidenceListResponse"
+  /api/eval/reports:
+    get:
+      tags: [eval]
+      summary: List registered eval reports
+      operationId: listEvalReports
+      parameters:
+        - name: config_version
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: retrieval_config_version
+          in: query
+          required: false
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Eval report page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvalReportListResponse"
+    post:
+      tags: [eval]
+      summary: Idempotently register a completed eval report
+      operationId: registerEvalReport
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvalReportRegistration"
+      responses:
+        "201":
+          description: Eval report registered or the equivalent prior registration returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvalReportEnvelope"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/eval/reports/{report_id}:
+    get:
+      tags: [eval]
+      summary: Get a registered eval report
+      operationId: getEvalReport
+      parameters:
+        - $ref: "#/components/parameters/ReportId"
+      responses:
+        "200":
+          description: Eval report detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvalReportEnvelope"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/admin/quality/feedback:
+    get:
+      tags: [quality-operations]
+      summary: List immutable administrator answer feedback
+      operationId: listQualityFeedback
+      parameters:
+        - name: message_id
+          in: query
+          schema: {type: string}
+        - name: kind
+          in: query
+          schema: {$ref: "#/components/schemas/AnswerFeedbackKind"}
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Feedback page
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AnswerFeedbackListResponse"}
+    post:
+      tags: [quality-operations]
+      summary: Append feedback for an evidenced assistant answer
+      operationId: createQualityFeedback
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CreateAnswerFeedbackRequest"}
+      responses:
+        "201":
+          description: Feedback created or equivalent prior write returned
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AnswerFeedbackEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+        "422": {$ref: "#/components/responses/ValidationError"}
+  /api/admin/quality/experiments:
+    get:
+      tags: [quality-operations]
+      summary: List governed quality experiments
+      operationId: listQualityExperiments
+      parameters:
+        - name: status
+          in: query
+          schema: {$ref: "#/components/schemas/QualityExperimentStatus"}
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Experiment page
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/QualityExperimentListResponse"}
+    post:
+      tags: [quality-operations]
+      summary: Create a draft experiment with candidate configs isolated from production
+      operationId: createQualityExperiment
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CreateQualityExperimentRequest"}
+      responses:
+        "201":
+          description: Draft experiment
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/QualityExperimentEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+        "422": {$ref: "#/components/responses/ValidationError"}
+  /api/admin/quality/experiments/{experiment_id}:
+    get:
+      tags: [quality-operations]
+      summary: Get a governed quality experiment
+      operationId: getQualityExperiment
+      parameters:
+        - $ref: "#/components/parameters/ExperimentId"
+      responses:
+        "200":
+          description: Experiment detail
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/QualityExperimentEnvelope"}
+        "404": {$ref: "#/components/responses/NotFoundError"}
+  /api/admin/quality/experiments/{experiment_id}/feedback:
+    post:
+      tags: [quality-operations]
+      summary: Attach reviewed feedback while an experiment is unfrozen
+      operationId: attachQualityExperimentFeedback
+      parameters:
+        - $ref: "#/components/parameters/ExperimentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/AttachQualityExperimentFeedbackRequest"}
+      responses:
+        "200":
+          description: Updated experiment
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/QualityExperimentEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+        "422": {$ref: "#/components/responses/ValidationError"}
+  /api/admin/quality/experiments/{experiment_id}/freeze:
+    post:
+      tags: [quality-operations]
+      summary: Freeze conditions and make an experiment ready for controlled evaluation
+      operationId: freezeQualityExperiment
+      parameters:
+        - $ref: "#/components/parameters/ExperimentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Frozen experiment
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/QualityExperimentEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+  /api/admin/quality/experiments/{experiment_id}/reports:
+    post:
+      tags: [quality-operations]
+      summary: Register an exact-match controlled runner report for an evaluating experiment
+      operationId: registerQualityExperimentReport
+      parameters:
+        - $ref: "#/components/parameters/ExperimentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/RegisterQualityExperimentReportRequest"}
+      responses:
+        "200":
+          description: Experiment ready for review
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/QualityExperimentEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+        "422": {$ref: "#/components/responses/ValidationError"}
+  /api/admin/quality/experiments/{experiment_id}/approve:
+    post:
+      tags: [quality-operations]
+      summary: Approve a gate-passing experiment for publication
+      operationId: approveQualityExperiment
+      parameters:
+        - $ref: "#/components/parameters/ExperimentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/QualityDecisionRequest"}
+      responses:
+        "200":
+          description: Approved experiment
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/QualityExperimentEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+  /api/admin/quality/experiments/{experiment_id}/publish:
+    post:
+      tags: [quality-operations]
+      summary: Atomically publish an approved config pair for future conversations
+      operationId: publishQualityExperiment
+      parameters:
+        - $ref: "#/components/parameters/ExperimentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Published release
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/QualityReleaseEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+  /api/admin/quality/releases:
+    get:
+      tags: [quality-operations]
+      summary: List immutable quality releases
+      operationId: listQualityReleases
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Release page
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/QualityReleaseListResponse"}
+  /api/admin/quality/releases/{release_id}/rollback:
+    post:
+      tags: [quality-operations]
+      summary: Create a forward rollback release for a prior published config pair
+      operationId: rollbackQualityRelease
+      parameters:
+        - $ref: "#/components/parameters/ReleaseId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: New rollback release
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/QualityReleaseEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+  /api/admin/onboarding/datasets:
+    get:
+      tags: [onboarding-quality]
+      summary: List administrator onboarding datasets
+      operationId: listOnboardingDatasets
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Onboarding dataset page
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OnboardingDatasetListResponse"}
+    post:
+      tags: [onboarding-quality]
+      summary: Create a draft onboarding dataset for an already published snapshot
+      operationId: createOnboardingDataset
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CreateOnboardingDatasetRequest"}
+      responses:
+        "201":
+          description: Draft dataset
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OnboardingDatasetEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+        "422": {$ref: "#/components/responses/ValidationError"}
+  /api/admin/onboarding/datasets/{dataset_id}:
+    get:
+      tags: [onboarding-quality]
+      summary: Get an onboarding dataset with reviewed cases
+      operationId: getOnboardingDataset
+      parameters:
+        - $ref: "#/components/parameters/DatasetId"
+      responses:
+        "200":
+          description: Onboarding dataset detail
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OnboardingDatasetEnvelope"}
+        "404": {$ref: "#/components/responses/NotFoundError"}
+  /api/admin/onboarding/datasets/{dataset_id}/cases:
+    post:
+      tags: [onboarding-quality]
+      summary: Add a draft or reviewed truth case to a draft onboarding dataset
+      operationId: createOnboardingCase
+      parameters:
+        - $ref: "#/components/parameters/DatasetId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CreateOnboardingCaseRequest"}
+      responses:
+        "201":
+          description: Onboarding case
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OnboardingCaseEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+        "422": {$ref: "#/components/responses/ValidationError"}
+  /api/admin/onboarding/datasets/{dataset_id}/freeze:
+    post:
+      tags: [onboarding-quality]
+      summary: Freeze reviewed onboarding truth and its canonical hash
+      operationId: freezeOnboardingDataset
+      parameters:
+        - $ref: "#/components/parameters/DatasetId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Frozen dataset
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OnboardingDatasetEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+  /api/admin/onboarding/datasets/{dataset_id}/runs:
+    post:
+      tags: [onboarding-quality]
+      summary: Queue a snapshot-scoped onboarding evaluation run
+      operationId: createOnboardingRun
+      parameters:
+        - $ref: "#/components/parameters/DatasetId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "202":
+          description: Queued run
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OnboardingRunEnvelope"}
+        "409": {$ref: "#/components/responses/ConflictError"}
+  /api/admin/onboarding/runs/{run_id}:
+    get:
+      tags: [onboarding-quality]
+      summary: Get a persisted onboarding evaluation run and its case results
+      operationId: getOnboardingRun
+      parameters:
+        - $ref: "#/components/parameters/OnboardingRunId"
+      responses:
+        "200":
+          description: Onboarding run detail
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OnboardingRunEnvelope"}
+        "404": {$ref: "#/components/responses/NotFoundError"}
+  /api/logs/retrieval:
+    get:
+      tags: [logs]
+      summary: List retrieval logs
+      operationId: listRetrievalLogs
+      parameters:
+        - $ref: "#/components/parameters/ConversationIdQuery"
+        - $ref: "#/components/parameters/MessageIdQuery"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Retrieval logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetrievalLogListResponse"
+  /api/logs/generation:
+    get:
+      tags: [logs]
+      summary: List generation logs
+      operationId: listGenerationLogs
+      parameters:
+        - $ref: "#/components/parameters/ConversationIdQuery"
+        - $ref: "#/components/parameters/MessageIdQuery"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Generation logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerationLogListResponse"
+components:
+  parameters:
+    ConversationId:
+      name: conversation_id
+      in: path
+      required: true
+      schema:
+        type: string
+    MessageId:
+      name: message_id
+      in: path
+      required: true
+      schema:
+        type: string
+    FileId:
+      name: file_id
+      in: path
+      required: true
+      schema:
+        type: string
+    DocumentId:
+      name: document_id
+      in: path
+      required: true
+      schema:
+        type: string
+    DocumentIdQuery:
+      name: document_id
+      in: query
+      required: false
+      schema:
+        type: string
+    SnapshotId:
+      name: snapshot_id
+      in: path
+      required: true
+      schema:
+        type: string
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 200
+    ReportId:
+      name: report_id
+      in: path
+      required: true
+      schema:
+        type: string
+    ExperimentId:
+      name: experiment_id
+      in: path
+      required: true
+      schema:
+        type: string
+    ReleaseId:
+      name: release_id
+      in: path
+      required: true
+      schema:
+        type: string
+    DatasetId:
+      name: dataset_id
+      in: path
+      required: true
+      schema:
+        type: string
+    OnboardingRunId:
+      name: run_id
+      in: path
+      required: true
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    NextCursor:
+      name: next_cursor
+      in: query
+      required: false
+      schema:
+        type: string
+    FileStatus:
+      name: status
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/FileStatus"
+    SourceFormat:
+      name: source_format
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/SourceFormat"
+    ConversationIdQuery:
+      name: conversation_id
+      in: query
+      required: false
+      schema:
+        type: string
+    MessageIdQuery:
+      name: message_id
+      in: query
+      required: false
+      schema:
+        type: string
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    UnauthorizedError:
+      description: Authentication failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    NotFoundError:
+      description: Requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    ConflictError:
+      description: Request conflicts with current resource state
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    RuntimeContractError:
+      description: Runtime returned an unverifiable result. No completed assistant message or citation is persisted.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    DependencyUnavailableError:
+      description: A required product dependency is unavailable. The client must not render an empty success state.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+  schemas:
+    SourceFormat:
+      type: string
+      enum: [txt, md, json, pdf, docx, xlsx, pptx]
+    FileStatus:
+      type: string
+      enum: [uploaded, queued, running, succeeded, failed, deleted]
+    MessageRole:
+      type: string
+      enum: [system, user, assistant]
+    MessageStatus:
+      type: string
+      enum: [pending, streaming, completed, failed]
+    FinishReason:
+      type: string
+      enum: [stop, length, refusal, error]
+    ErrorDetail:
+      type: object
+      required: [code, message, retryable, request_id, stage]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+          description: User-safe localized message; never includes provider credentials or internal endpoint details.
+        retryable:
+          type: boolean
+        request_id:
+          type: string
+        stage:
+          type: string
+          description: Stable product stage, for example runtime_call or runtime_response_validation.
+      additionalProperties: false
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          $ref: "#/components/schemas/ErrorDetail"
+      additionalProperties: false
+    OkResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+      additionalProperties: false
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+      additionalProperties: false
+    AuthRole:
+      type: string
+      enum: [user, knowledge_admin, system_admin, admin]
+      description: "`admin` is a legacy session role treated as `system_admin`; new sessions use `system_admin`."
+    AuthenticatedUser:
+      type: object
+      required: [user_id, username, role]
+      properties:
+        user_id: {type: string}
+        username: {type: string}
+        role: {$ref: "#/components/schemas/AuthRole"}
+      additionalProperties: false
+    LoginResponse:
+      type: object
+      required: [user]
+      properties:
+        user: {$ref: "#/components/schemas/AuthenticatedUser"}
+      additionalProperties: false
+    Pagination:
+      type: object
+      required: [total]
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        next_cursor:
+          type: string
+      additionalProperties: false
+    Conversation:
+      type: object
+      required:
+        - conversation_id
+        - owner_id
+        - title
+        - created_at
+        - updated_at
+        - config_version
+        - retrieval_config_version
+        - model_id
+      properties:
+        conversation_id:
+          type: string
+        owner_id:
+          type: string
+          description: Stable authenticated subject that owns this conversation.
+        title:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        config_version:
+          type: string
+        retrieval_config_version:
+          type: string
+        knowledge_snapshot_id:
+          type: string
+          deprecated: true
+          description: Legacy conversation field. K5 records the actual knowledge snapshot on each assistant message instead.
+        model_id:
+          type: string
+      additionalProperties: false
+    ConversationEnvelope:
+      type: object
+      required: [conversation]
+      properties:
+        conversation:
+          $ref: "#/components/schemas/Conversation"
+      additionalProperties: false
+    ConversationListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Conversation"
+        total:
+          type: integer
+          minimum: 0
+        next_cursor:
+          type: string
+      additionalProperties: false
+    CreateConversationRequest:
+      type: object
+      properties:
+        title:
+          type: string
+      additionalProperties: false
+    UpdateConversationTitleRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 48
+      additionalProperties: false
+    Message:
+      type: object
+      required:
+        - message_id
+        - conversation_id
+        - role
+        - content
+        - status
+        - created_at
+        - knowledge_used
+      properties:
+        message_id:
+          type: string
+        conversation_id:
+          type: string
+        role:
+          $ref: "#/components/schemas/MessageRole"
+        content:
+          type: string
+        status:
+          $ref: "#/components/schemas/MessageStatus"
+        created_at:
+          type: string
+          format: date-time
+        finish_reason:
+          $ref: "#/components/schemas/FinishReason"
+        citations_count:
+          type: integer
+          minimum: 0
+        knowledge_snapshot_id:
+          type: string
+        knowledge_snapshot_manifest_hash:
+          type: string
+        answered_at:
+          type: string
+          format: date-time
+        freshness_status:
+          $ref: "#/components/schemas/FreshnessStatus"
+        citation_anchors:
+          type: array
+          items:
+            $ref: "#/components/schemas/CitationAnchor"
+        intent:
+          type: string
+          enum: [knowledge_query, social_greeting, social_thanks, social_farewell, capability_help, off_topic, out_of_scope]
+        knowledge_used:
+          type: boolean
+        answer_disposition:
+          $ref: "#/components/schemas/AnswerDisposition"
+        answer_policy_version:
+          type: string
+          enum: [answer_policy_v1, answer_policy_v2, answer_policy_v3, answer_policy_v4, answer_policy_v5]
+        policy_evaluation_performed:
+          type: boolean
+        answer_generation_performed:
+          type: boolean
+        clarification_id:
+          type: string
+        coverage:
+          $ref: "#/components/schemas/AnswerCoverage"
+      additionalProperties: false
+    AnswerDisposition:
+      type: string
+      enum: [grounded_answer, partial_answer, clarification_required, insufficient_evidence, controlled_response]
+    AnswerCoverage:
+      type: object
+      required: [requested_count, supported_count, uncovered_description]
+      properties:
+        requested_count:
+          type: integer
+          minimum: 1
+        supported_count:
+          type: integer
+          minimum: 0
+        uncovered_description:
+          type: string
+          minLength: 1
+          maxLength: 1200
+      additionalProperties: false
+    AnswerClarification:
+      type: object
+      required: [missing_dimensions, question]
+      properties:
+        missing_dimensions:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+        question:
+          type: string
+          minLength: 1
+          maxLength: 600
+      additionalProperties: false
+    ClarificationResolution:
+      type: object
+      required: [pending_clarification_id, pending_state_version, action]
+      properties:
+        pending_clarification_id:
+          type: string
+        pending_state_version:
+          type: integer
+          minimum: 1
+        action:
+          type: string
+          enum: [resolved, abandoned, needs_more]
+        resolved_query:
+          type: string
+          minLength: 1
+          maxLength: 600
+      additionalProperties: false
+    RetrievalCandidate:
+      type: object
+      required: [chunk_id, file_id, document_id, revision_id, chunk_content_sha256, knowledge_snapshot_id, rank, score, source_locator]
+      properties:
+        chunk_id:
+          type: string
+        file_id:
+          type: string
+        document_id:
+          type: string
+        revision_id:
+          type: string
+        chunk_content_sha256:
+          type: string
+        knowledge_snapshot_id:
+          type: string
+        rank:
+          type: integer
+          minimum: 1
+        score:
+          type: number
+        source_locator:
+          $ref: "#/components/schemas/SourceLocator"
+      additionalProperties: false
+    ConversationDetailResponse:
+      type: object
+      required: [conversation, messages]
+      properties:
+        conversation:
+          $ref: "#/components/schemas/Conversation"
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+      additionalProperties: false
+    CreateMessageRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          minLength: 1
+        stream:
+          type: boolean
+          default: true
+      additionalProperties: false
+    MessageExchangeResponse:
+      type: object
+      required: [user_message, assistant_message]
+      properties:
+        user_message:
+          $ref: "#/components/schemas/Message"
+        assistant_message:
+          $ref: "#/components/schemas/Message"
+      additionalProperties: false
+    SourceLocator:
+      type: object
+      required: [source_format]
+      properties:
+        source_format:
+          $ref: "#/components/schemas/SourceFormat"
+        page_no:
+          type: integer
+          minimum: 1
+        heading_path:
+          type: array
+          items:
+            type: string
+        paragraph_index:
+          type: integer
+          minimum: 0
+        sheet_name:
+          type: string
+        cell_range:
+          type: string
+        slide_no:
+          type: integer
+          minimum: 1
+        slide_title:
+          type: string
+        block_label:
+          type: string
+        json_path:
+          type: string
+      additionalProperties: false
+    Citation:
+      type: object
+      required:
+        - message_id
+        - chunk_id
+        - file_id
+        - filename
+        - rank
+        - score
+        - citation_label
+        - source_locator
+        - snippet
+      properties:
+        message_id:
+          type: string
+        chunk_id:
+          type: string
+        file_id:
+          type: string
+        document_id:
+          type: string
+        revision_id:
+          type: string
+        chunk_content_sha256:
+          type: string
+        knowledge_snapshot_id:
+          type: string
+        filename:
+          type: string
+        rank:
+          type: integer
+          minimum: 1
+        score:
+          type: number
+        citation_label:
+          type: string
+        source_locator:
+          $ref: "#/components/schemas/SourceLocator"
+        snippet:
+          type: string
+      additionalProperties: false
+    CitationAnchor:
+      type: object
+      required: [start_rune, end_rune, citation_ranks]
+      properties:
+        start_rune:
+          type: integer
+          minimum: 0
+        end_rune:
+          type: integer
+          minimum: 1
+        citation_ranks:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+      additionalProperties: false
+    MessageSourcesResponse:
+      type: object
+      required: [message_id, items]
+      properties:
+        message_id:
+          type: string
+        knowledge_snapshot_id:
+          type: string
+        knowledge_snapshot_manifest_hash:
+          type: string
+        freshness_status:
+          $ref: "#/components/schemas/FreshnessStatus"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Citation"
+      additionalProperties: false
+    FreshnessStatus:
+      type: string
+      enum: [current, possibly_stale, revalidated, unknown]
+    RevalidateMessageRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+      additionalProperties: false
+    RevalidationRun:
+      type: object
+      required: [revalidation_id, conversation_id, original_message_id, status, trigger, latest_snapshot_id, latest_snapshot_manifest_hash, related_update_event_ids, requested_at]
+      properties:
+        revalidation_id:
+          type: string
+        conversation_id:
+          type: string
+        original_message_id:
+          type: string
+        status:
+          type: string
+          enum: [queued, running, completed, failed]
+        trigger:
+          type: string
+          enum: [manual]
+        reason:
+          type: string
+        latest_snapshot_id:
+          type: string
+        latest_snapshot_manifest_hash:
+          type: string
+        related_update_event_ids:
+          type: array
+          items:
+            type: string
+        requested_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        outcome:
+          $ref: "#/components/schemas/RevalidationOutcome"
+        result:
+          $ref: "#/components/schemas/RevalidationResult"
+        error:
+          $ref: "#/components/schemas/ErrorDetail"
+      additionalProperties: false
+    RevalidationOutcome:
+      type: string
+      enum: [still_valid, needs_update, insufficient_evidence]
+    RevalidationResult:
+      type: object
+      required: [revalidation_id, content, knowledge_snapshot_id, knowledge_snapshot_manifest_hash, outcome, citations, completed_at]
+      properties:
+        revalidation_id:
+          type: string
+        content:
+          type: string
+        knowledge_snapshot_id:
+          type: string
+        knowledge_snapshot_manifest_hash:
+          type: string
+        outcome:
+          $ref: "#/components/schemas/RevalidationOutcome"
+        citations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Citation"
+        completed_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    RevalidationRunEnvelope:
+      type: object
+      required: [revalidation]
+      properties:
+        revalidation:
+          $ref: "#/components/schemas/RevalidationRun"
+      additionalProperties: false
+    KnowledgeFile:
+      type: object
+      required:
+        - file_id
+        - filename
+        - mime_type
+        - source_format
+        - status
+        - uploaded_by
+        - uploaded_at
+        - object_uri
+        - parse_version
+        - index_version
+      properties:
+        file_id:
+          type: string
+        filename:
+          type: string
+        mime_type:
+          type: string
+        source_format:
+          $ref: "#/components/schemas/SourceFormat"
+        status:
+          $ref: "#/components/schemas/FileStatus"
+        uploaded_by:
+          type: string
+        uploaded_at:
+          type: string
+          format: date-time
+        object_uri:
+          type: string
+        parse_version:
+          type: string
+        index_version:
+          type: string
+      additionalProperties: false
+    KnowledgeDocumentStatus:
+      type: string
+      enum: [active, disabled, deleted]
+    KnowledgeRevisionStatus:
+      type: string
+      enum: [legacy_unpublished, uploaded, queued, indexing, ready, published, superseded, failed, disabled, deleted]
+    KnowledgeDocument:
+      type: object
+      required: [document_id, display_name, owner_id, status, created_at, updated_at]
+      properties:
+        document_id:
+          type: string
+        display_name:
+          type: string
+        owner_id:
+          type: string
+        status:
+          $ref: "#/components/schemas/KnowledgeDocumentStatus"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    KnowledgeRevision:
+      type: object
+      required: [revision_id, document_id, filename, mime_type, source_format, checksum_sha256, parse_version, index_version, status, created_at, updated_at]
+      properties:
+        revision_id:
+          type: string
+        document_id:
+          type: string
+        filename:
+          type: string
+        mime_type:
+          type: string
+        source_format:
+          $ref: "#/components/schemas/SourceFormat"
+        checksum_sha256:
+          type: string
+        parse_version:
+          type: string
+        index_version:
+          type: string
+        embedding_model:
+          type: string
+        effective_at:
+          type: string
+          format: date-time
+        chunk_manifest_sha256:
+          type: string
+        status:
+          $ref: "#/components/schemas/KnowledgeRevisionStatus"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    RevisionDeliverySummary:
+      type: object
+      required: [delivery_id, status, attempt_count, updated_at]
+      properties:
+        delivery_id:
+          type: string
+        status:
+          type: string
+          enum: [pending, streamed, indexing, retry, delivered, dead_letter]
+        attempt_count:
+          type: integer
+          minimum: 0
+        last_error:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    KnowledgeSnapshotSummary:
+      type: object
+      required: [snapshot_id, status, manifest_sha256, created_at]
+      properties:
+        snapshot_id:
+          type: string
+        status:
+          type: string
+          enum: [building, published, retired]
+        manifest_sha256:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        published_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    KnowledgeSnapshot:
+      type: object
+      required: [snapshot_id, status, manifest_sha256, created_at, members]
+      properties:
+        snapshot_id:
+          type: string
+        parent_snapshot_id:
+          type: string
+        status:
+          type: string
+          enum: [building, published, retired]
+        manifest_sha256:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        published_at:
+          type: string
+          format: date-time
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/KnowledgeSnapshotMember"
+      additionalProperties: false
+    KnowledgeSnapshotMember:
+      type: object
+      required: [snapshot_id, revision_id, document_id, checksum_sha256]
+      properties:
+        snapshot_id:
+          type: string
+        revision_id:
+          type: string
+        document_id:
+          type: string
+        checksum_sha256:
+          type: string
+      additionalProperties: false
+    KnowledgeSnapshotDetailResponse:
+      type: object
+      required: [snapshot]
+      properties:
+        snapshot:
+          $ref: "#/components/schemas/KnowledgeSnapshot"
+      additionalProperties: false
+    KnowledgeUpdateEventSummary:
+      type: object
+      required: [event_id, event_type, document_id, created_at]
+      properties:
+        event_id:
+          type: string
+        event_type:
+          type: string
+          enum: [uploaded, indexed, published, replaced, disabled, deleted, reindexed]
+        document_id:
+          type: string
+        revision_id:
+          type: string
+        snapshot_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    KnowledgeFreshnessScanStatus:
+      type: string
+      enum: [queued, running, retry, completed, failed]
+    KnowledgeFreshnessScan:
+      type: object
+      required: [event_id, status, attempt_count, candidate_count, marked_count, updated_at]
+      properties:
+        event_id:
+          type: string
+        status:
+          $ref: "#/components/schemas/KnowledgeFreshnessScanStatus"
+        attempt_count:
+          type: integer
+          minimum: 0
+        candidate_count:
+          type: integer
+          minimum: 0
+        marked_count:
+          type: integer
+          minimum: 0
+        last_error:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    KnowledgeUpdateEvent:
+      type: object
+      required: [event_id, event_type, occurred_at]
+      properties:
+        event_id:
+          type: string
+        event_type:
+          type: string
+          enum: [uploaded, indexed, published, replaced, disabled, deleted, reindexed]
+        document_id:
+          type: string
+        revision_id:
+          type: string
+        snapshot_id:
+          type: string
+        actor_id:
+          type: string
+        correlation_id:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        freshness_scan:
+          $ref: "#/components/schemas/KnowledgeFreshnessScan"
+      additionalProperties: false
+    KnowledgeUpdateListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/KnowledgeUpdateEvent"
+        next_cursor:
+          type: string
+      additionalProperties: false
+    KnowledgeDocumentListItem:
+      type: object
+      required: [document_id, display_name, owner_id, status, created_at, updated_at]
+      properties:
+        document_id:
+          type: string
+        display_name:
+          type: string
+        owner_id:
+          type: string
+        status:
+          $ref: "#/components/schemas/KnowledgeDocumentStatus"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        current_revision:
+          $ref: "#/components/schemas/KnowledgeRevision"
+      additionalProperties: false
+    KnowledgeDocumentListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/KnowledgeDocumentListItem"
+        total:
+          type: integer
+          minimum: 0
+        next_cursor:
+          type: string
+      additionalProperties: false
+    KnowledgeDocumentDetailResponse:
+      type: object
+      required: [document, revisions]
+      properties:
+        document:
+          $ref: "#/components/schemas/KnowledgeDocument"
+        revisions:
+          type: array
+          items:
+            type: object
+            required: [revision]
+            properties:
+              revision:
+                $ref: "#/components/schemas/KnowledgeRevision"
+              delivery:
+                $ref: "#/components/schemas/RevisionDeliverySummary"
+              in_active_snapshot:
+                type: boolean
+            additionalProperties: false
+        active_snapshot_id:
+          type: string
+      additionalProperties: false
+    UploadKnowledgeDocumentRequest:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+        display_name:
+          type: string
+          maxLength: 240
+        effective_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    UploadKnowledgeRevisionRequest:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+        effective_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    KnowledgeRevisionUploadResponse:
+      type: object
+      required: [document, revision, delivery]
+      properties:
+        document:
+          $ref: "#/components/schemas/KnowledgeDocument"
+        revision:
+          $ref: "#/components/schemas/KnowledgeRevision"
+        delivery:
+          $ref: "#/components/schemas/RevisionDeliverySummary"
+      additionalProperties: false
+    KnowledgeLifecycleMutationResponse:
+      type: object
+      required: [document]
+      properties:
+        document:
+          $ref: "#/components/schemas/KnowledgeDocument"
+        snapshot:
+          $ref: "#/components/schemas/KnowledgeSnapshotSummary"
+        update_event:
+          $ref: "#/components/schemas/KnowledgeUpdateEventSummary"
+      additionalProperties: false
+    KnowledgeRetirementReadinessResponse:
+      type: object
+      required: [readiness]
+      properties:
+        readiness:
+          $ref: "#/components/schemas/KnowledgeRetirementReadiness"
+      additionalProperties: false
+    KnowledgeRetirementReadiness:
+      type: object
+      required: [document_id, stage, blockers]
+      properties:
+        document_id:
+          type: string
+        stage:
+          type: string
+          enum: [blocked, ready_to_disable, ready_to_delete]
+        active_snapshot_id:
+          type: string
+        active_snapshot_manifest_hash:
+          type: string
+        passing_onboarding_run_id:
+          type: string
+        blockers:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+    IngestionTaskSummary:
+      type: object
+      required: [task_id, file_id, status, requested_at, updated_at]
+      properties:
+        task_id:
+          type: string
+        file_id:
+          type: string
+        status:
+          type: string
+          enum: [queued, running, succeeded, failed]
+        requested_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        force_reindex:
+          type: boolean
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            retryable:
+              type: boolean
+          additionalProperties: false
+      additionalProperties: false
+    IngestionTaskEnvelope:
+      type: object
+      required: [ingestion_task]
+      properties:
+        ingestion_task:
+          $ref: "#/components/schemas/IngestionTaskSummary"
+      additionalProperties: false
+    KnowledgeFileListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/KnowledgeFile"
+        total:
+          type: integer
+          minimum: 0
+        next_cursor:
+          type: string
+      additionalProperties: false
+    UploadKnowledgeFileRequest:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+        force_reindex:
+          type: boolean
+          default: false
+      additionalProperties: false
+    UploadKnowledgeFileResponse:
+      type: object
+      required: [file, ingestion_task]
+      properties:
+        file:
+          $ref: "#/components/schemas/KnowledgeFile"
+        ingestion_task:
+          $ref: "#/components/schemas/IngestionTaskSummary"
+      additionalProperties: false
+    KnowledgeFileDetailResponse:
+      type: object
+      required: [file, latest_task]
+      properties:
+        file:
+          $ref: "#/components/schemas/KnowledgeFile"
+        latest_task:
+          $ref: "#/components/schemas/IngestionTaskSummary"
+      additionalProperties: false
+    DeleteKnowledgeFileResponse:
+      type: object
+      required: [ok, file_id]
+      properties:
+        ok:
+          type: boolean
+        file_id:
+          type: string
+      additionalProperties: false
+    ReindexKnowledgeFileRequest:
+      type: object
+      properties:
+        force_reindex:
+          type: boolean
+          default: true
+      additionalProperties: false
+    ChunkRecord:
+      type: object
+      required:
+        - chunk_id
+        - file_id
+        - source_format
+        - block_type
+        - source_locator
+        - text
+      properties:
+        chunk_id:
+          type: string
+        file_id:
+          type: string
+        source_format:
+          $ref: "#/components/schemas/SourceFormat"
+        block_type:
+          type: string
+        heading_path:
+          type: array
+          items:
+            type: string
+        page_no:
+          type: integer
+          minimum: 1
+        source_locator:
+          $ref: "#/components/schemas/SourceLocator"
+        text:
+          type: string
+        token_count:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+    KnowledgeFileChunksResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChunkRecord"
+        total:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+    AgentConfig:
+      type: object
+      required:
+        - config_version
+        - model_id
+        - system_prompt_version
+        - response_style
+        - temperature
+        - top_p
+        - max_output_tokens
+        - answer_policy_version
+        - created_at
+      properties:
+        config_version:
+          type: string
+        model_id:
+          type: string
+        system_prompt_version:
+          type: string
+          enum: [prompt_v1, prompt_v2, prompt_v3, prompt_v4, prompt_v5, prompt_v6, prompt_v7, prompt_v8, prompt_v9, prompt_v10, prompt_v11, prompt_v12]
+        response_style:
+          type: string
+        temperature:
+          type: number
+        top_p:
+          type: number
+          minimum: 0
+          maximum: 1
+        max_output_tokens:
+          type: integer
+          minimum: 1
+        answer_policy_version:
+          type: string
+          enum: [legacy_unknown, answer_policy_v1, answer_policy_v2, answer_policy_v3, answer_policy_v4, answer_policy_v5]
+        created_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+      allOf:
+        - if:
+            properties:
+              system_prompt_version:
+                enum: [prompt_v1, prompt_v2, prompt_v3, prompt_v4, prompt_v5, prompt_v6, prompt_v7]
+          then:
+            properties:
+              answer_policy_version:
+                const: legacy_unknown
+        - if:
+            properties:
+              system_prompt_version:
+                const: prompt_v8
+          then:
+            properties:
+              answer_policy_version:
+                const: answer_policy_v1
+        - if:
+            properties:
+              system_prompt_version:
+                const: prompt_v9
+          then:
+            properties:
+              answer_policy_version:
+                const: answer_policy_v2
+        - if:
+            properties:
+              system_prompt_version:
+                const: prompt_v10
+          then:
+            properties:
+              answer_policy_version:
+                const: answer_policy_v3
+        - if:
+            properties:
+              system_prompt_version:
+                const: prompt_v11
+          then:
+            properties:
+              answer_policy_version:
+                const: answer_policy_v4
+        - if:
+            properties:
+              system_prompt_version:
+                const: prompt_v12
+          then:
+            properties:
+              answer_policy_version:
+                const: answer_policy_v5
+    UpdateAgentConfigRequest:
+      type: object
+      required: [model_id, system_prompt_version, temperature, max_output_tokens]
+      properties:
+        model_id:
+          type: string
+        system_prompt_version:
+          type: string
+          enum: [prompt_v1, prompt_v2, prompt_v3, prompt_v4, prompt_v5, prompt_v6, prompt_v7, prompt_v8, prompt_v9, prompt_v10, prompt_v11, prompt_v12]
+        response_style:
+          type: string
+          default: concise
+        temperature:
+          type: number
+        top_p:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 1
+        max_output_tokens:
+          type: integer
+          minimum: 1
+        answer_policy_version:
+          type: string
+          enum: [answer_policy_v1, answer_policy_v2, answer_policy_v3, answer_policy_v4, answer_policy_v5]
+      additionalProperties: false
+      allOf:
+        - if:
+            properties:
+              system_prompt_version:
+                enum: [prompt_v1, prompt_v2, prompt_v3, prompt_v4, prompt_v5, prompt_v6, prompt_v7]
+          then:
+            not:
+              required: [answer_policy_version]
+        - if:
+            properties:
+              system_prompt_version:
+                const: prompt_v8
+          then:
+            required: [answer_policy_version]
+            properties:
+              answer_policy_version:
+                const: answer_policy_v1
+        - if:
+            properties:
+              system_prompt_version:
+                const: prompt_v9
+          then:
+            required: [answer_policy_version]
+            properties:
+              answer_policy_version:
+                const: answer_policy_v2
+        - if:
+            properties:
+              system_prompt_version:
+                const: prompt_v10
+          then:
+            required: [answer_policy_version]
+            properties:
+              answer_policy_version:
+                const: answer_policy_v3
+        - if:
+            properties:
+              system_prompt_version:
+                const: prompt_v11
+          then:
+            required: [answer_policy_version]
+            properties:
+              answer_policy_version:
+                const: answer_policy_v4
+        - if:
+            properties:
+              system_prompt_version:
+                const: prompt_v12
+          then:
+            required: [answer_policy_version]
+            properties:
+              answer_policy_version:
+                const: answer_policy_v5
+    AgentConfigEnvelope:
+      type: object
+      required: [config]
+      properties:
+        config:
+          $ref: "#/components/schemas/AgentConfig"
+      additionalProperties: false
+    RetrievalConfig:
+      type: object
+      required:
+        - retrieval_config_version
+        - retrieval_strategy
+        - embedding_model
+        - top_k
+        - rerank_enabled
+        - evidence_min_score
+        - created_at
+      properties:
+        retrieval_config_version:
+          type: string
+        retrieval_strategy:
+          type: string
+          enum: [lexical_compat_v1, native_dense_v1]
+        embedding_model:
+          type: string
+        top_k:
+          type: integer
+          minimum: 1
+        rerank_enabled:
+          type: boolean
+        evidence_min_score:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 1
+        created_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    UpdateRetrievalConfigRequest:
+      type: object
+      required: [retrieval_strategy, embedding_model, top_k, rerank_enabled, evidence_min_score]
+      properties:
+        retrieval_strategy:
+          type: string
+          enum: [lexical_compat_v1, native_dense_v1]
+        embedding_model:
+          type: string
+        top_k:
+          type: integer
+          minimum: 1
+        rerank_enabled:
+          type: boolean
+        evidence_min_score:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 1
+      additionalProperties: false
+    RetrievalConfigEnvelope:
+      type: object
+      required: [config]
+      properties:
+        config:
+          $ref: "#/components/schemas/RetrievalConfig"
+      additionalProperties: false
+    ConfigVersionSummary:
+      type: object
+      required: [version_id, kind, created_at]
+      properties:
+        version_id:
+          type: string
+        kind:
+          type: string
+          enum: [agent, retrieval]
+        created_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ConfigVersionListResponse:
+      type: object
+      required: [items, total, retrieval_items, retrieval_total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentConfig"
+        total:
+          type: integer
+          minimum: 0
+        retrieval_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RetrievalConfig"
+        retrieval_total:
+          type: integer
+          minimum: 0
+        next_cursor:
+          type: string
+      additionalProperties: false
+    AnswerFeedbackKind:
+      type: string
+      enum: [correct, incorrect, should_refuse, missing_evidence, wrong_evidence, outdated_knowledge, knowledge_gap, should_clarify, unnecessary_clarification, incomplete_coverage]
+    AnswerFeedback:
+      type: object
+      required: [feedback_id, message_id, conversation_id, actor_id, kind, created_at]
+      properties:
+        feedback_id: {type: string}
+        message_id: {type: string}
+        conversation_id: {type: string}
+        actor_id: {type: string}
+        kind: {$ref: "#/components/schemas/AnswerFeedbackKind"}
+        comment: {type: string}
+        corrected_answer: {type: string}
+        expected_citation_ranks:
+          type: array
+          items: {type: integer, minimum: 1}
+        created_at: {type: string, format: date-time}
+      additionalProperties: false
+    CreateAnswerFeedbackRequest:
+      type: object
+      required: [message_id, kind]
+      properties:
+        message_id: {type: string}
+        kind: {$ref: "#/components/schemas/AnswerFeedbackKind"}
+        comment: {type: string}
+        corrected_answer: {type: string}
+        expected_citation_ranks:
+          type: array
+          items: {type: integer, minimum: 1}
+      additionalProperties: false
+    AnswerFeedbackEnvelope:
+      type: object
+      required: [feedback]
+      properties:
+        feedback: {$ref: "#/components/schemas/AnswerFeedback"}
+      additionalProperties: false
+    AnswerFeedbackListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: {$ref: "#/components/schemas/AnswerFeedback"}
+        next_cursor: {type: string}
+      additionalProperties: false
+    QualityExperimentStatus:
+      type: string
+      enum: [draft, collecting_feedback, ready_for_eval, evaluating, review_ready, approved, published, cancelled, failed, rejected, superseded]
+    QualityExperiment:
+      type: object
+      required: [experiment_id, status, created_by, baseline_config_version, baseline_retrieval_config_version, candidate_config_version, candidate_retrieval_config_version, knowledge_snapshot_id, knowledge_snapshot_manifest_hash, dataset_id, dataset_sha256, conditions, conditions_sha256, acceptance, created_at]
+      properties:
+        experiment_id: {type: string}
+        status: {$ref: "#/components/schemas/QualityExperimentStatus"}
+        created_by: {type: string}
+        baseline_config_version: {type: string}
+        baseline_retrieval_config_version: {type: string}
+        candidate_config_version: {type: string}
+        candidate_retrieval_config_version: {type: string}
+        knowledge_snapshot_id: {type: string}
+        knowledge_snapshot_manifest_hash: {type: string}
+        dataset_id: {type: string}
+        dataset_sha256: {type: string}
+        conditions: {type: object, additionalProperties: true}
+        conditions_sha256: {type: string}
+        acceptance: {type: object, additionalProperties: true}
+        feedback_ids:
+          type: array
+          items: {type: string}
+        baseline_report_id: {type: string}
+        candidate_report_id: {type: string}
+        decision_reason: {type: string}
+        release_id: {type: string}
+        created_at: {type: string, format: date-time}
+        frozen_at: {type: string, format: date-time}
+        approved_at: {type: string, format: date-time}
+        published_at: {type: string, format: date-time}
+      additionalProperties: false
+    CreateQualityExperimentRequest:
+      type: object
+      required: [baseline_config_version, baseline_retrieval_config_version, candidate_config_version, candidate_retrieval_config_version, knowledge_snapshot_id, knowledge_snapshot_manifest_hash, dataset_id, dataset_sha256, conditions, acceptance]
+      properties:
+        baseline_config_version: {type: string}
+        baseline_retrieval_config_version: {type: string}
+        candidate_config_version: {type: string}
+        candidate_retrieval_config_version: {type: string}
+        knowledge_snapshot_id: {type: string}
+        knowledge_snapshot_manifest_hash: {type: string}
+        dataset_id: {type: string}
+        dataset_sha256: {type: string}
+        conditions: {type: object, additionalProperties: true}
+        acceptance: {type: object, additionalProperties: true}
+      additionalProperties: false
+    AttachQualityExperimentFeedbackRequest:
+      type: object
+      required: [feedback_id]
+      properties:
+        feedback_id: {type: string}
+      additionalProperties: false
+    RegisterQualityExperimentReportRequest:
+      type: object
+      required: [report_id, role]
+      properties:
+        report_id: {type: string}
+        role:
+          type: string
+          enum: [baseline, candidate]
+      additionalProperties: false
+    QualityDecisionRequest:
+      type: object
+      properties:
+        reason: {type: string}
+      additionalProperties: false
+    QualityExperimentEnvelope:
+      type: object
+      required: [experiment]
+      properties:
+        experiment: {$ref: "#/components/schemas/QualityExperiment"}
+      additionalProperties: false
+    QualityExperimentListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: {$ref: "#/components/schemas/QualityExperiment"}
+        next_cursor: {type: string}
+      additionalProperties: false
+    QualityRelease:
+      type: object
+      required: [release_id, status, config_version, retrieval_config_version, created_by, created_at]
+      properties:
+        release_id: {type: string}
+        status:
+          type: string
+          enum: [published, rolled_back]
+        config_version: {type: string}
+        retrieval_config_version: {type: string}
+        experiment_id: {type: string}
+        previous_release_id: {type: string}
+        created_by: {type: string}
+        created_at: {type: string, format: date-time}
+    QualityReleaseEnvelope:
+      type: object
+      required: [release]
+      properties:
+        release: {$ref: "#/components/schemas/QualityRelease"}
+      additionalProperties: false
+    QualityReleaseListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: {$ref: "#/components/schemas/QualityRelease"}
+        next_cursor: {type: string}
+      additionalProperties: false
+    EvalMetrics:
+      type: object
+      required: [grounded_correctness, citation_accuracy, refusal_correctness]
+      properties:
+        grounded_correctness:
+          type: number
+        citation_accuracy:
+          type: number
+        refusal_correctness:
+          type: number
+      additionalProperties: false
+    OnboardingDataset:
+      type: object
+      required: [dataset_id, name, status, knowledge_snapshot_id, knowledge_snapshot_manifest_hash, created_by, created_at]
+      properties:
+        dataset_id: {type: string}
+        name: {type: string}
+        status: {type: string, enum: [draft, ready, superseded]}
+        knowledge_snapshot_id: {type: string}
+        knowledge_snapshot_manifest_hash: {type: string}
+        cases_sha256: {type: string}
+        created_by: {type: string}
+        created_at: {type: string, format: date-time}
+        frozen_at: {type: string, format: date-time}
+        cases:
+          type: array
+          items: {$ref: "#/components/schemas/OnboardingCase"}
+      additionalProperties: false
+    OnboardingCase:
+      type: object
+      required: [case_id, dataset_id, case_type, question, review_status, created_at, updated_at]
+      properties:
+        case_id: {type: string}
+        dataset_id: {type: string}
+        case_type: {type: string, enum: [must_answer, must_refuse]}
+        question: {type: string}
+        expected_revision_ids:
+          type: array
+          items: {type: string}
+        expected_locator_hints:
+          type: array
+          items: {type: string}
+        expected_answer_points:
+          type: array
+          items: {type: string}
+        review_status: {type: string, enum: [draft, reviewed]}
+        reviewed_by: {type: string}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+      additionalProperties: false
+    CreateOnboardingDatasetRequest:
+      type: object
+      required: [name, knowledge_snapshot_id]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 200}
+        knowledge_snapshot_id: {type: string, minLength: 1}
+      additionalProperties: false
+    CreateOnboardingCaseRequest:
+      type: object
+      required: [case_type, question, review_status]
+      properties:
+        case_type: {type: string, enum: [must_answer, must_refuse]}
+        question: {type: string, minLength: 1}
+        expected_revision_ids:
+          type: array
+          items: {type: string}
+        expected_locator_hints:
+          type: array
+          items: {type: string}
+        expected_answer_points:
+          type: array
+          items: {type: string}
+        review_status: {type: string, enum: [draft, reviewed]}
+      additionalProperties: false
+    OnboardingCaseResult:
+      type: object
+      required: [run_id, case_id, passed, refusal, observed_answer, completed_at]
+      properties:
+        run_id: {type: string}
+        case_id: {type: string}
+        passed: {type: boolean}
+        refusal: {type: boolean}
+        observed_answer: {type: string}
+        observed_citations:
+          type: array
+          items: {$ref: "#/components/schemas/Citation"}
+        expected_revision_hit: {type: boolean}
+        expected_locator_hit: {type: boolean}
+        answer_point_hit_rate: {type: number}
+        failure_code: {type: string}
+        completed_at: {type: string, format: date-time}
+      additionalProperties: false
+    OnboardingRun:
+      type: object
+      required: [run_id, dataset_id, status, knowledge_snapshot_id, knowledge_snapshot_manifest_hash, config_version, retrieval_config_version, cases_sha256, created_at]
+      properties:
+        run_id: {type: string}
+        dataset_id: {type: string}
+        status: {type: string, enum: [queued, running, passed, failed]}
+        knowledge_snapshot_id: {type: string}
+        knowledge_snapshot_manifest_hash: {type: string}
+        config_version: {type: string}
+        retrieval_config_version: {type: string}
+        cases_sha256: {type: string}
+        metrics: {type: object, additionalProperties: true}
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: {type: string}
+            message: {type: string}
+          additionalProperties: false
+        created_at: {type: string, format: date-time}
+        started_at: {type: string, format: date-time}
+        completed_at: {type: string, format: date-time}
+        results:
+          type: array
+          items: {$ref: "#/components/schemas/OnboardingCaseResult"}
+      additionalProperties: false
+    OnboardingDatasetEnvelope:
+      type: object
+      required: [dataset]
+      properties:
+        dataset: {$ref: "#/components/schemas/OnboardingDataset"}
+      additionalProperties: false
+    OnboardingCaseEnvelope:
+      type: object
+      required: [case]
+      properties:
+        case: {$ref: "#/components/schemas/OnboardingCase"}
+      additionalProperties: false
+    OnboardingDatasetListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: {$ref: "#/components/schemas/OnboardingDataset"}
+      additionalProperties: false
+    OnboardingRunEnvelope:
+      type: object
+      required: [run]
+      properties:
+        run: {$ref: "#/components/schemas/OnboardingRun"}
+      additionalProperties: false
+    EvalReportRegistration:
+      type: object
+      required: [report_id, dataset_id, model_id, config_version, retrieval_config_version, generation_config, metrics, completed_at]
+      properties:
+        report_id:
+          type: string
+        dataset_id:
+          type: string
+        model_id:
+          type: string
+        config_version:
+          type: string
+        retrieval_config_version:
+          type: string
+        generation_config:
+          type: object
+          additionalProperties: true
+        metrics:
+          type: object
+          additionalProperties: true
+        completed_at:
+          type: string
+          format: date-time
+      additionalProperties: true
+    EvalReport:
+      allOf:
+        - $ref: "#/components/schemas/EvalReportRegistration"
+        - type: object
+          required: [report_payload, created_at]
+          properties:
+            report_payload:
+              type: object
+              additionalProperties: true
+            created_at:
+              type: string
+              format: date-time
+    EvalReportEnvelope:
+      type: object
+      required: [report]
+      properties:
+        report:
+          $ref: "#/components/schemas/EvalReport"
+      additionalProperties: false
+    EvalReportListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvalReport"
+        next_cursor:
+          type: string
+      additionalProperties: false
+    RetrievalLogEntry:
+      type: object
+      required: [request_id, conversation_id, message_id, created_at]
+      properties:
+        request_id:
+          type: string
+        conversation_id:
+          type: string
+        message_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        top_k:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    MessageExecutionEvidence:
+      type: object
+      required: [message_id, conversation_id, request_id, config_version, retrieval_config_version, model_id, generation_config, retrieval_config, refusal, finish_reason, completed_at, intent, retrieval_performed, generation_performed, knowledge_used]
+      properties:
+        message_id:
+          type: string
+        conversation_id:
+          type: string
+        request_id:
+          type: string
+        config_version:
+          type: string
+        retrieval_config_version:
+          type: string
+        knowledge_snapshot_id:
+          type: string
+        model_id:
+          type: string
+        generation_config:
+          type: object
+          additionalProperties: true
+        retrieval_config:
+          type: object
+          additionalProperties: true
+        usage:
+          type: object
+          additionalProperties: true
+        refusal:
+          type: boolean
+        finish_reason:
+          $ref: "#/components/schemas/FinishReason"
+        completed_at:
+          type: string
+          format: date-time
+        intent:
+          type: string
+          enum: [knowledge_query, social_greeting, social_thanks, social_farewell, capability_help, off_topic, out_of_scope]
+        retrieval_performed:
+          type: boolean
+        generation_performed:
+          type: boolean
+        knowledge_used:
+          type: boolean
+        answer_disposition:
+          $ref: "#/components/schemas/AnswerDisposition"
+        answer_policy_version:
+          type: string
+          enum: [answer_policy_v1, answer_policy_v2, answer_policy_v3, answer_policy_v4, answer_policy_v5]
+        policy_evaluation_performed:
+          type: boolean
+        answer_generation_performed:
+          type: boolean
+        clarification:
+          $ref: "#/components/schemas/AnswerClarification"
+        coverage:
+          $ref: "#/components/schemas/AnswerCoverage"
+        resolution:
+          $ref: "#/components/schemas/ClarificationResolution"
+        resolved_query:
+          type: string
+        execution:
+          $ref: "#/components/schemas/ExecutionObservation"
+        retrieval_candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/RetrievalCandidate"
+        used_citation_ranks:
+          type: array
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+        context_resolution:
+          $ref: "#/components/schemas/ContextResolution"
+      allOf:
+        - if:
+            required: [answer_policy_version, answer_disposition]
+            properties:
+              answer_policy_version:
+                enum: [answer_policy_v1, answer_policy_v2, answer_policy_v3, answer_policy_v4, answer_policy_v5]
+              answer_disposition:
+                not:
+                  const: controlled_response
+          then:
+            required: [execution]
+            properties:
+              execution:
+                allOf:
+                  - $ref: "#/components/schemas/ExecutionObservation"
+                  - required: [policy, policy_provider, policy_model_id, policy_call_count]
+                    properties:
+                      policy:
+                        const: performed
+        - if:
+            required: [answer_disposition]
+            properties:
+              answer_disposition:
+                const: controlled_response
+          then:
+            properties:
+              execution:
+                allOf:
+                  - $ref: "#/components/schemas/ExecutionObservation"
+                  - required: [policy]
+                    properties:
+                      policy:
+                        const: not_run
+                  - not:
+                      anyOf:
+                        - required: [policy_provider]
+                        - required: [policy_model_id]
+                        - required: [policy_call_count]
+      additionalProperties: false
+    ExecutionObservation:
+      type: object
+      required: [policy, retrieval, generation, fallback_used]
+      properties:
+        policy:
+          type: string
+          enum: [performed, not_run]
+        policy_provider:
+          type: string
+          minLength: 1
+        policy_model_id:
+          type: string
+          minLength: 1
+        policy_call_count:
+          type: integer
+          minimum: 1
+        scope_shape:
+          type: string
+          enum: [fact_lookup, branch_dependent, unknown_target]
+        retrieval_target:
+          type: string
+          minLength: 1
+          maxLength: 1200
+        requested_fact_fields:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+        unresolved_branch_dimensions:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+        untrusted_instruction_present:
+          type: boolean
+        retrieval:
+          $ref: "#/components/schemas/RetrievalExecutionObservation"
+        generation:
+          $ref: "#/components/schemas/GenerationExecutionObservation"
+        fallback_used:
+          type: boolean
+      additionalProperties: false
+    RetrievalExecutionObservation:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [performed, not_run]
+        strategy:
+          type: string
+        embedding_model:
+          type: string
+        collection:
+          type: string
+        candidate_count:
+          type: integer
+          minimum: 0
+        top_k:
+          type: integer
+          minimum: 1
+        rerank_enabled:
+          type: boolean
+        evidence_min_score:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 1
+      allOf:
+        - if:
+            properties:
+              status:
+                const: performed
+            required: [status]
+          then:
+            required: [strategy, embedding_model, collection, candidate_count, top_k, rerank_enabled, evidence_min_score]
+      additionalProperties: false
+    GenerationExecutionObservation:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [performed, not_run]
+        provider:
+          type: string
+        model_id:
+          type: string
+      additionalProperties: false
+    ContextResolution:
+      type: object
+      required: [intent, route, kind, basis_message_ids, resolver_performed, confidence]
+      properties:
+        intent:
+          type: string
+          enum: [knowledge_query, social_greeting, social_thanks, social_farewell, capability_help, off_topic, out_of_scope]
+        route:
+          type: string
+          enum: [rag, controlled_reply, clarification]
+        kind:
+          type: string
+          enum: [follow_up, standalone, topic_shift, clarification_required]
+        resolved_query:
+          type: string
+        basis_message_ids:
+          type: array
+          items: {type: string}
+        router_policy_version:
+          type: string
+          enum: [conversation_router_v1]
+        resolver_provider:
+          type: string
+        resolver_model_id:
+          type: string
+        resolver_performed:
+          type: boolean
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+      additionalProperties: false
+    MessageExecutionEvidenceEnvelope:
+      type: object
+      required: [evidence]
+      properties:
+        evidence:
+          $ref: "#/components/schemas/MessageExecutionEvidence"
+      additionalProperties: false
+    MessageExecutionEvidenceListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageExecutionEvidence"
+        next_cursor:
+          type: string
+      additionalProperties: false
+    KnowledgeDeliveryEvidence:
+      type: object
+      required: [delivery_id, topic, status, attempt_count, available_at, created_at, updated_at]
+      properties:
+        delivery_id:
+          type: string
+        topic:
+          type: string
+        document_id:
+          type: string
+        revision_id:
+          type: string
+        snapshot_id:
+          type: string
+        status:
+          type: string
+        attempt_count:
+          type: integer
+          minimum: 0
+        available_at:
+          type: string
+          format: date-time
+        stream_message_id:
+          type: string
+        lease_until:
+          type: string
+          format: date-time
+        last_error:
+          type: string
+        completed_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    KnowledgeDeliveryEvidenceListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/KnowledgeDeliveryEvidence"
+        next_cursor:
+          type: string
+      additionalProperties: false
+    RetrievalLogListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RetrievalLogEntry"
+        total:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+    GenerationLogEntry:
+      type: object
+      required: [request_id, conversation_id, message_id, model_id, created_at]
+      properties:
+        request_id:
+          type: string
+        conversation_id:
+          type: string
+        message_id:
+          type: string
+        model_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        finish_reason:
+          $ref: "#/components/schemas/FinishReason"
+      additionalProperties: false
+    GenerationLogListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GenerationLogEntry"
+        total:
+          type: integer
+          minimum: 0
+      additionalProperties: false

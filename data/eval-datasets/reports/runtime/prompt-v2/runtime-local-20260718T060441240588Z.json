@@ -1,0 +1,3200 @@
+{
+  "run_id": "runtime-local-20260718T060441240588Z",
+  "mode": "runtime-local",
+  "dataset_id": "v1-seed",
+  "dataset_sha256": "sha256:38047c0958a78fb4035fe1d654859509ae7362e17c420f7c4e8f01c04e9f99ea",
+  "model_id": "llama3.2:latest",
+  "config_version": "cfg_eval_runtime_v1",
+  "retrieval_config_version": "rcfg_eval_runtime_v1",
+  "retrieval_strategy": "lexical_compat_v1",
+  "knowledge_snapshot_id": "snapshot_active",
+  "knowledge_scope": null,
+  "generation_config": {
+    "system_prompt_version": "prompt_v2",
+    "temperature": 0.2,
+    "max_output_tokens": 1024
+  },
+  "retrieval": {
+    "mode": "lexical",
+    "strategy": "lexical_compat_v1",
+    "embedding_base_url": null,
+    "embedding_model": null,
+    "embedding_dimensions": null,
+    "qdrant_collection": null,
+    "top_k": null,
+    "rerank_enabled": null,
+    "evidence_min_score": null
+  },
+  "started_at": "2026-07-18T06:04:40.990166+00:00",
+  "completed_at": "2026-07-18T06:04:41.240585+00:00",
+  "metrics": {
+    "sample_count": 40,
+    "must_answer_count": 35,
+    "must_refuse_count": 5,
+    "format_family_counts": {
+      "docx": 5,
+      "json": 5,
+      "md": 5,
+      "must_refuse": 5,
+      "pdf": 5,
+      "pptx": 5,
+      "txt": 5,
+      "xlsx": 5
+    },
+    "task_type_counts": {
+      "insufficient_evidence": 5,
+      "locator_check": 1,
+      "policy_flow_answer": 4,
+      "same_file_multi_block": 2,
+      "single_source_fact_lookup": 21,
+      "table_lookup": 7
+    },
+    "passed_count": 31,
+    "failed_count": 9,
+    "retrieval_recall_at_k": 0.9714,
+    "expected_file_hit_rate": 0.9714,
+    "grounded_correctness": 0.7357,
+    "citation_accuracy": 0.9714,
+    "refusal_correctness": 1.0,
+    "average_latency_ms": 1.59
+  },
+  "samples": [
+    {
+      "question_id": "q_txt_001",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "txt",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，差旅报销 差旅结束后 10 个自然日内提交报销。 单笔住宿费用超过 800 元需要补充行程说明。 缺少发票时，默认不予报销，除非财务主管书面批准。 根据检索到的资料，请假政策 年假需要至少提前 3 个工作日发起申请。 连续请假超过 5 个工作日需要直属主管和 HR 双重审批。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_txt:block-2",
+          "file_id": "sample_employee_handbook_txt",
+          "filename": "employee-handbook.txt",
+          "rank": 1,
+          "score": 1.6578,
+          "citation_label": "paragraph-2",
+          "source_locator": {
+            "source_format": "txt",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "paragraph-2",
+            "json_path": null
+          },
+          "snippet": "请假政策 年假需要至少提前 3 个工作日发起申请。 连续请假超过 5 个工作日需要直属主管和 HR 双重审批。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_txt:block-3",
+          "file_id": "sample_employee_handbook_txt",
+          "filename": "employee-handbook.txt",
+          "rank": 2,
+          "score": 0.5039,
+          "citation_label": "paragraph-3",
+          "source_locator": {
+            "source_format": "txt",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "paragraph-3",
+            "json_path": null
+          },
+          "snippet": "差旅报销 差旅结束后 10 个自然日内提交报销。 单笔住宿费用超过 800 元需要补充行程说明。 缺少发票时，默认不予报销，除非财务主管书面批准。"
+        }
+      ],
+      "top_score": 1.6578,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 21.533,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_txt_002",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "txt",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，差旅报销 差旅结束后 10 个自然日内提交报销。 单笔住宿费用超过 800 元需要补充行程说明。 缺少发票时，默认不予报销，除非财务主管书面批准。 根据检索到的资料，请假政策 年假需要至少提前 3 个工作日发起申请。 连续请假超过 5 个工作日需要直属主管和 HR 双重审批。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_txt:block-2",
+          "file_id": "sample_employee_handbook_txt",
+          "filename": "employee-handbook.txt",
+          "rank": 1,
+          "score": 1.0458,
+          "citation_label": "paragraph-2",
+          "source_locator": {
+            "source_format": "txt",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "paragraph-2",
+            "json_path": null
+          },
+          "snippet": "请假政策 年假需要至少提前 3 个工作日发起申请。 连续请假超过 5 个工作日需要直属主管和 HR 双重审批。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_txt:block-3",
+          "file_id": "sample_employee_handbook_txt",
+          "filename": "employee-handbook.txt",
+          "rank": 2,
+          "score": 0.2965,
+          "citation_label": "paragraph-3",
+          "source_locator": {
+            "source_format": "txt",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "paragraph-3",
+            "json_path": null
+          },
+          "snippet": "差旅报销 差旅结束后 10 个自然日内提交报销。 单笔住宿费用超过 800 元需要补充行程说明。 缺少发票时，默认不予报销，除非财务主管书面批准。"
+        }
+      ],
+      "top_score": 1.0458,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.38,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_txt_003",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "txt",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，差旅报销 差旅结束后 10 个自然日内提交报销。 单笔住宿费用超过 800 元需要补充行程说明。 缺少发票时，默认不予报销，除非财务主管书面批准。 根据检索到的资料，请假政策 年假需要至少提前 3 个工作日发起申请。 连续请假超过 5 个工作日需要直属主管和 HR 双重审批。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_txt:block-3",
+          "file_id": "sample_employee_handbook_txt",
+          "filename": "employee-handbook.txt",
+          "rank": 1,
+          "score": 1.6986,
+          "citation_label": "paragraph-3",
+          "source_locator": {
+            "source_format": "txt",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "paragraph-3",
+            "json_path": null
+          },
+          "snippet": "差旅报销 差旅结束后 10 个自然日内提交报销。 单笔住宿费用超过 800 元需要补充行程说明。 缺少发票时，默认不予报销，除非财务主管书面批准。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_txt:block-2",
+          "file_id": "sample_employee_handbook_txt",
+          "filename": "employee-handbook.txt",
+          "rank": 2,
+          "score": 0.4084,
+          "citation_label": "paragraph-2",
+          "source_locator": {
+            "source_format": "txt",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "paragraph-2",
+            "json_path": null
+          },
+          "snippet": "请假政策 年假需要至少提前 3 个工作日发起申请。 连续请假超过 5 个工作日需要直属主管和 HR 双重审批。"
+        }
+      ],
+      "top_score": 1.6986,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.199,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_txt_004",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "txt",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，差旅报销 差旅结束后 10 个自然日内提交报销。 单笔住宿费用超过 800 元需要补充行程说明。 缺少发票时，默认不予报销，除非财务主管书面批准。 根据检索到的资料，请假政策 年假需要至少提前 3 个工作日发起申请。 连续请假超过 5 个工作日需要直属主管和 HR 双重审批。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_txt:block-3",
+          "file_id": "sample_employee_handbook_txt",
+          "filename": "employee-handbook.txt",
+          "rank": 1,
+          "score": 1.7142,
+          "citation_label": "paragraph-3",
+          "source_locator": {
+            "source_format": "txt",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "paragraph-3",
+            "json_path": null
+          },
+          "snippet": "差旅报销 差旅结束后 10 个自然日内提交报销。 单笔住宿费用超过 800 元需要补充行程说明。 缺少发票时，默认不予报销，除非财务主管书面批准。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_txt:block-2",
+          "file_id": "sample_employee_handbook_txt",
+          "filename": "employee-handbook.txt",
+          "rank": 2,
+          "score": 0.3949,
+          "citation_label": "paragraph-2",
+          "source_locator": {
+            "source_format": "txt",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "paragraph-2",
+            "json_path": null
+          },
+          "snippet": "请假政策 年假需要至少提前 3 个工作日发起申请。 连续请假超过 5 个工作日需要直属主管和 HR 双重审批。"
+        }
+      ],
+      "top_score": 1.7142,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.083,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_txt_005",
+      "task_type": "policy_flow_answer",
+      "format_family": "txt",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，差旅报销 差旅结束后 10 个自然日内提交报销。 单笔住宿费用超过 800 元需要补充行程说明。 缺少发票时，默认不予报销，除非财务主管书面批准。 根据检索到的资料，请假政策 年假需要至少提前 3 个工作日发起申请。 连续请假超过 5 个工作日需要直属主管和 HR 双重审批。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_txt:block-3",
+          "file_id": "sample_employee_handbook_txt",
+          "filename": "employee-handbook.txt",
+          "rank": 1,
+          "score": 0.9321,
+          "citation_label": "paragraph-3",
+          "source_locator": {
+            "source_format": "txt",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "paragraph-3",
+            "json_path": null
+          },
+          "snippet": "差旅报销 差旅结束后 10 个自然日内提交报销。 单笔住宿费用超过 800 元需要补充行程说明。 缺少发票时，默认不予报销，除非财务主管书面批准。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_txt:block-2",
+          "file_id": "sample_employee_handbook_txt",
+          "filename": "employee-handbook.txt",
+          "rank": 2,
+          "score": 0.1358,
+          "citation_label": "paragraph-2",
+          "source_locator": {
+            "source_format": "txt",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "paragraph-2",
+            "json_path": null
+          },
+          "snippet": "请假政策 年假需要至少提前 3 个工作日发起申请。 连续请假超过 5 个工作日需要直属主管和 HR 双重审批。"
+        }
+      ],
+      "top_score": 0.9321,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.125,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_md_001",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，连续请假超过 5 个工作日需要直属主管和 HR 双重审批。 根据检索到的资料，单笔住宿费用超过 800 元需要补充行程说明。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_md:block-3",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 1,
+          "score": 0.9319,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-3",
+            "json_path": null
+          },
+          "snippet": "年假需要至少提前 3 个工作日发起申请。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-4",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 2,
+          "score": 0.3239,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-4",
+            "json_path": null
+          },
+          "snippet": "连续请假超过 5 个工作日需要直属主管和 HR 双重审批。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-7",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 3,
+          "score": 0.2135,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-7",
+            "json_path": null
+          },
+          "snippet": "单笔住宿费用超过 800 元需要补充行程说明。"
+        }
+      ],
+      "top_score": 0.9319,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.138,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_md_002",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，连续请假超过 5 个工作日需要直属主管和 HR 双重审批。 根据检索到的资料，单笔住宿费用超过 800 元需要补充行程说明。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_md:block-4",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 1,
+          "score": 1.2557,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-4",
+            "json_path": null
+          },
+          "snippet": "连续请假超过 5 个工作日需要直属主管和 HR 双重审批。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-3",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 2,
+          "score": 0.3917,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-3",
+            "json_path": null
+          },
+          "snippet": "年假需要至少提前 3 个工作日发起申请。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-7",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 3,
+          "score": 0.3867,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-7",
+            "json_path": null
+          },
+          "snippet": "单笔住宿费用超过 800 元需要补充行程说明。"
+        }
+      ],
+      "top_score": 1.2557,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.07,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_md_003",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，年假需要至少提前 3 个工作日发起申请。 根据检索到的资料，差旅结束后 10 个自然日内提交报销。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_md:block-6",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 1,
+          "score": 0.6302,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-6",
+            "json_path": null
+          },
+          "snippet": "差旅结束后 10 个自然日内提交报销。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-8",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 2,
+          "score": 0.2509,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-8",
+            "json_path": null
+          },
+          "snippet": "缺少发票时，默认不予报销，除非财务主管书面批准。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-3",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 3,
+          "score": 0.1225,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-3",
+            "json_path": null
+          },
+          "snippet": "年假需要至少提前 3 个工作日发起申请。"
+        }
+      ],
+      "top_score": 0.6302,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.007,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_md_004",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，连续请假超过 5 个工作日需要直属主管和 HR 双重审批。 根据检索到的资料，单笔住宿费用超过 800 元需要补充行程说明。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_md:block-7",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 1,
+          "score": 1.3484,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-7",
+            "json_path": null
+          },
+          "snippet": "单笔住宿费用超过 800 元需要补充行程说明。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-4",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 2,
+          "score": 0.3667,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-4",
+            "json_path": null
+          },
+          "snippet": "连续请假超过 5 个工作日需要直属主管和 HR 双重审批。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-3",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 3,
+          "score": 0.1947,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-3",
+            "json_path": null
+          },
+          "snippet": "年假需要至少提前 3 个工作日发起申请。"
+        }
+      ],
+      "top_score": 1.3484,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.239,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_md_005",
+      "task_type": "policy_flow_answer",
+      "format_family": "md",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，年假需要至少提前 3 个工作日发起申请。 根据检索到的资料，差旅结束后 10 个自然日内提交报销。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_md:block-8",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 1,
+          "score": 0.6665,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-8",
+            "json_path": null
+          },
+          "snippet": "缺少发票时，默认不予报销，除非财务主管书面批准。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-6",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 2,
+          "score": 0.2134,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-6",
+            "json_path": null
+          },
+          "snippet": "差旅结束后 10 个自然日内提交报销。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-3",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 3,
+          "score": 0.1247,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-3",
+            "json_path": null
+          },
+          "snippet": "年假需要至少提前 3 个工作日发起申请。"
+        }
+      ],
+      "top_score": 0.6665,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.032,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_json_001",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "json",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，$.policies[1].rules[0]: 差旅结束后10个自然日内提交报销。 根据检索到的资料，$.policies[0].rules[0]: 年假需要至少提前3个工作日申请。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_catalog_json:block-7",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 1,
+          "score": 0.8009,
+          "citation_label": "$.policies[1].rules[0]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[1].rules[0]"
+          },
+          "snippet": "$.policies[1].rules[0]: 差旅结束后10个自然日内提交报销"
+        },
+        {
+          "chunk_id": "sample_policy_catalog_json:block-6",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 2,
+          "score": 0.7008,
+          "citation_label": "$.policies[1].title",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[1].title"
+          },
+          "snippet": "$.policies[1].title: 差旅报销"
+        },
+        {
+          "chunk_id": "sample_policy_catalog_json:block-3",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 3,
+          "score": 0.278,
+          "citation_label": "$.policies[0].rules[0]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].rules[0]"
+          },
+          "snippet": "$.policies[0].rules[0]: 年假需要至少提前3个工作日申请"
+        }
+      ],
+      "top_score": 0.8009,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.011,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_json_002",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "json",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，$.policies[0].rules[0]: 年假需要至少提前3个工作日申请。 根据检索到的资料，$.policies[0].id: leave_policy。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_catalog_json:block-3",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 1,
+          "score": 0.6739,
+          "citation_label": "$.policies[0].rules[0]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].rules[0]"
+          },
+          "snippet": "$.policies[0].rules[0]: 年假需要至少提前3个工作日申请"
+        },
+        {
+          "chunk_id": "sample_policy_catalog_json:block-2",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 2,
+          "score": 0.4499,
+          "citation_label": "$.policies[0].title",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].title"
+          },
+          "snippet": "$.policies[0].title: 请假政策"
+        },
+        {
+          "chunk_id": "sample_policy_catalog_json:block-1",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 3,
+          "score": 0.2661,
+          "citation_label": "$.policies[0].id",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].id"
+          },
+          "snippet": "$.policies[0].id: leave_policy"
+        }
+      ],
+      "top_score": 0.6739,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.048,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_json_003",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "json",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，$.policies[0].rules[1]: 连续请假超过5个工作日需要主管和HR审批。 根据检索到的资料，$.policies[0].rules[0]: 年假需要至少提前3个工作日申请。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_catalog_json:block-4",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 1,
+          "score": 1.7331,
+          "citation_label": "$.policies[0].rules[1]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].rules[1]"
+          },
+          "snippet": "$.policies[0].rules[1]: 连续请假超过5个工作日需要主管和HR审批"
+        },
+        {
+          "chunk_id": "sample_policy_catalog_json:block-3",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 2,
+          "score": 0.7607,
+          "citation_label": "$.policies[0].rules[0]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].rules[0]"
+          },
+          "snippet": "$.policies[0].rules[0]: 年假需要至少提前3个工作日申请"
+        },
+        {
+          "chunk_id": "sample_policy_catalog_json:block-2",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 3,
+          "score": 0.506,
+          "citation_label": "$.policies[0].title",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].title"
+          },
+          "snippet": "$.policies[0].title: 请假政策"
+        }
+      ],
+      "top_score": 1.7331,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.042,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_json_004",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "json",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，$.policies[0].rules[1]: 连续请假超过5个工作日需要主管和HR审批。 根据检索到的资料，$.policies[1].rules[1]: 住宿费用超过800元需补充说明。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_catalog_json:block-8",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 1,
+          "score": 1.4301,
+          "citation_label": "$.policies[1].rules[1]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[1].rules[1]"
+          },
+          "snippet": "$.policies[1].rules[1]: 住宿费用超过800元需补充说明"
+        },
+        {
+          "chunk_id": "sample_policy_catalog_json:block-4",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 2,
+          "score": 0.3722,
+          "citation_label": "$.policies[0].rules[1]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].rules[1]"
+          },
+          "snippet": "$.policies[0].rules[1]: 连续请假超过5个工作日需要主管和HR审批"
+        },
+        {
+          "chunk_id": "sample_policy_catalog_json:block-2",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 3,
+          "score": 0.2587,
+          "citation_label": "$.policies[0].title",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].title"
+          },
+          "snippet": "$.policies[0].title: 请假政策"
+        }
+      ],
+      "top_score": 1.4301,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 0.991,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_json_005",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "json",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，$.policies[0].rules[0]: 年假需要至少提前3个工作日申请。 根据检索到的资料，$.policies[1].rules[2]: 缺少发票默认不予报销。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_catalog_json:block-9",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 1,
+          "score": 0.759,
+          "citation_label": "$.policies[1].rules[2]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[1].rules[2]"
+          },
+          "snippet": "$.policies[1].rules[2]: 缺少发票默认不予报销"
+        },
+        {
+          "chunk_id": "sample_policy_catalog_json:block-1",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 2,
+          "score": 0.133,
+          "citation_label": "$.policies[0].id",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].id"
+          },
+          "snippet": "$.policies[0].id: leave_policy"
+        },
+        {
+          "chunk_id": "sample_policy_catalog_json:block-3",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 3,
+          "score": 0.0614,
+          "citation_label": "$.policies[0].rules[0]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[0].rules[0]"
+          },
+          "snippet": "$.policies[0].rules[0]: 年假需要至少提前3个工作日申请"
+        }
+      ],
+      "top_score": 0.759,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.002,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_pdf_001",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "pdf",
+      "must_answer": true,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例里，差旅报销应在行程结束后多久内提交？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1042,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "top_score": 0.1042,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 1.024,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    },
+    {
+      "question_id": "q_pdf_002",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "pdf",
+      "must_answer": true,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例中，年假需要提前多久提交？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1145,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "top_score": 0.1145,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 1.02,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    },
+    {
+      "question_id": "q_pdf_003",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "pdf",
+      "must_answer": true,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例中，超过5个连续工作日的请假需要哪些批准？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1006,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "top_score": 0.1006,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 1.083,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    },
+    {
+      "question_id": "q_pdf_004",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "pdf",
+      "must_answer": true,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例中，酒店费用超过多少需要业务说明？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1077,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "top_score": 0.1077,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 1.044,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    },
+    {
+      "question_id": "q_pdf_005",
+      "task_type": "locator_check",
+      "format_family": "pdf",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Reference document for PDF parsing, page-number citation checks, and mixed prose/table ingestion.。 根据检索到的资料，Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.2604,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        },
+        {
+          "chunk_id": "sample_policy_pdf:block-2",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 2,
+          "score": 0.1476,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-2",
+            "json_path": null
+          },
+          "snippet": "Reference document for PDF parsing, page-number citation checks, and mixed prose/table ingestion."
+        },
+        {
+          "chunk_id": "sample_policy_pdf:block-25",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 3,
+          "score": 0.1345,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-25",
+            "json_path": null
+          },
+          "snippet": "matrix to exercise retrieval extraction."
+        }
+      ],
+      "top_score": 0.2604,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.119,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_docx_001",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "docx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Requests longer than 5 consecutive business days require both direct-manager approval and HR confirmation.。 根据检索到的资料，Any single hotel line item above CNY 800 must include a short business justification.。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_handbook_docx:block-10",
+          "file_id": "sample_handbook_docx",
+          "filename": "sample-handbook.docx",
+          "rank": 1,
+          "score": 0.4523,
+          "citation_label": "2. Expense Reimbursement",
+          "source_locator": {
+            "source_format": "docx",
+            "page_no": null,
+            "heading_path": [
+              "2. Expense Reimbursement"
+            ],
+            "paragraph_index": 2,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Any single hotel line item above CNY 800 must include a short business justification."
+        },
+        {
+          "chunk_id": "sample_handbook_docx:block-5",
+          "file_id": "sample_handbook_docx",
+          "filename": "sample-handbook.docx",
+          "rank": 2,
+          "score": 0.094,
+          "citation_label": "1. Leave And Time Off",
+          "source_locator": {
+            "source_format": "docx",
+            "page_no": null,
+            "heading_path": [
+              "1. Leave And Time Off"
+            ],
+            "paragraph_index": 1,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Annual leave requests must be submitted at least 3 business days in advance."
+        },
+        {
+          "chunk_id": "sample_handbook_docx:block-6",
+          "file_id": "sample_handbook_docx",
+          "filename": "sample-handbook.docx",
+          "rank": 3,
+          "score": 0.089,
+          "citation_label": "1. Leave And Time Off",
+          "source_locator": {
+            "source_format": "docx",
+            "page_no": null,
+            "heading_path": [
+              "1. Leave And Time Off"
+            ],
+            "paragraph_index": 2,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Requests longer than 5 consecutive business days require both direct-manager approval and HR confirmation."
+        }
+      ],
+      "top_score": 0.4523,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.087,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_docx_002",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "docx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Annual leave requests must be submitted at least 3 business days in advance.。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_handbook_docx:block-5",
+          "file_id": "sample_handbook_docx",
+          "filename": "sample-handbook.docx",
+          "rank": 1,
+          "score": 0.2101,
+          "citation_label": "1. Leave And Time Off",
+          "source_locator": {
+            "source_format": "docx",
+            "page_no": null,
+            "heading_path": [
+              "1. Leave And Time Off"
+            ],
+            "paragraph_index": 1,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Annual leave requests must be submitted at least 3 business days in advance."
+        }
+      ],
+      "top_score": 0.2101,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 0.965,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_docx_003",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "docx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Requests longer than 5 consecutive business days require both direct-manager approval and HR confirmation.。 根据检索到的资料，Annual leave requests must be submitted at least 3 business days in advance.。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_handbook_docx:block-6",
+          "file_id": "sample_handbook_docx",
+          "filename": "sample-handbook.docx",
+          "rank": 1,
+          "score": 0.7809,
+          "citation_label": "1. Leave And Time Off",
+          "source_locator": {
+            "source_format": "docx",
+            "page_no": null,
+            "heading_path": [
+              "1. Leave And Time Off"
+            ],
+            "paragraph_index": 2,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Requests longer than 5 consecutive business days require both direct-manager approval and HR confirmation."
+        },
+        {
+          "chunk_id": "sample_handbook_docx:block-7",
+          "file_id": "sample_handbook_docx",
+          "filename": "sample-handbook.docx",
+          "rank": 2,
+          "score": 0.1416,
+          "citation_label": "1. Leave And Time Off",
+          "source_locator": {
+            "source_format": "docx",
+            "page_no": null,
+            "heading_path": [
+              "1. Leave And Time Off"
+            ],
+            "paragraph_index": 3,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Managers should confirm coverage expectations in the same approval thread."
+        },
+        {
+          "chunk_id": "sample_handbook_docx:block-5",
+          "file_id": "sample_handbook_docx",
+          "filename": "sample-handbook.docx",
+          "rank": 3,
+          "score": 0.094,
+          "citation_label": "1. Leave And Time Off",
+          "source_locator": {
+            "source_format": "docx",
+            "page_no": null,
+            "heading_path": [
+              "1. Leave And Time Off"
+            ],
+            "paragraph_index": 1,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Annual leave requests must be submitted at least 3 business days in advance."
+        }
+      ],
+      "top_score": 0.7809,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.071,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_docx_004",
+      "task_type": "single_source_fact_lookup",
+      "format_family": "docx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Requests longer than 5 consecutive business days require both direct-manager approval and HR confirmation.。 根据检索到的资料，Managers should confirm coverage expectations in the same approval thread.。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_handbook_docx:block-7",
+          "file_id": "sample_handbook_docx",
+          "filename": "sample-handbook.docx",
+          "rank": 1,
+          "score": 0.6254,
+          "citation_label": "1. Leave And Time Off",
+          "source_locator": {
+            "source_format": "docx",
+            "page_no": null,
+            "heading_path": [
+              "1. Leave And Time Off"
+            ],
+            "paragraph_index": 3,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Managers should confirm coverage expectations in the same approval thread."
+        },
+        {
+          "chunk_id": "sample_handbook_docx:block-6",
+          "file_id": "sample_handbook_docx",
+          "filename": "sample-handbook.docx",
+          "rank": 2,
+          "score": 0.5035,
+          "citation_label": "1. Leave And Time Off",
+          "source_locator": {
+            "source_format": "docx",
+            "page_no": null,
+            "heading_path": [
+              "1. Leave And Time Off"
+            ],
+            "paragraph_index": 2,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Requests longer than 5 consecutive business days require both direct-manager approval and HR confirmation."
+        }
+      ],
+      "top_score": 0.6254,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.074,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_docx_005",
+      "task_type": "policy_flow_answer",
+      "format_family": "docx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Receipts are mandatory unless finance leadership grants an exception in writing.。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_handbook_docx:block-11",
+          "file_id": "sample_handbook_docx",
+          "filename": "sample-handbook.docx",
+          "rank": 1,
+          "score": 0.4222,
+          "citation_label": "2. Expense Reimbursement",
+          "source_locator": {
+            "source_format": "docx",
+            "page_no": null,
+            "heading_path": [
+              "2. Expense Reimbursement"
+            ],
+            "paragraph_index": 3,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Receipts are mandatory unless finance leadership grants an exception in writing."
+        }
+      ],
+      "top_score": 0.4222,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 0.994,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_xlsx_001",
+      "task_type": "table_lookup",
+      "format_family": "xlsx",
+      "must_answer": true,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：Excel 样例中，季度上传目标是多少？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [],
+      "top_score": 0.0,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 0.895,
+      "expected_file_hit": false,
+      "citation_locator_hit": false,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    },
+    {
+      "question_id": "q_xlsx_002",
+      "task_type": "table_lookup",
+      "format_family": "xlsx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Scenario | Users | Upload target | Support load | Model cost | Owner Pilot | 40 | 120 | 6 | 1800 | Ops Department rollout | 180 | 540 | 20 | 6200 | IT Knowledge refresh | 260 | 780 | 24 | 9100 | AI Team Executive review…。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_budget_xlsx:block-1",
+          "file_id": "sample_budget_xlsx",
+          "filename": "sample-budget.xlsx",
+          "rank": 1,
+          "score": 0.1671,
+          "citation_label": "Summary · A1:F5",
+          "source_locator": {
+            "source_format": "xlsx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": "Summary",
+            "cell_range": "A1:F5",
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Scenario | Users | Upload target | Support load | Model cost | Owner Pilot | 40 | 120 | 6 | 1800 | Ops Department rollout | 180 | 540 | 20 | 6200 | IT Knowledge refresh | 260 | 780 | 24 | 9100 | AI Team Executive review…"
+        }
+      ],
+      "top_score": 0.1671,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 0.971,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_xlsx_003",
+      "task_type": "table_lookup",
+      "format_family": "xlsx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Scenario | Users | Upload target | Support load | Model cost | Owner Pilot | 40 | 120 | 6 | 1800 | Ops Department rollout | 180 | 540 | 20 | 6200 | IT Knowledge refresh | 260 | 780 | 24 | 9100 | AI Team Executive review…。 根据检索到的资料，Milestone | Owner | Week | Output Contract freeze | Backend | W1 | API + payload schema Runtime sample parsers | AI Runtime | W2 | txt/md/json/pdf/docx/xlsx/pptx Admin upload UI | Web | W3 | drag-and-drop + status list…。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_budget_xlsx:block-1",
+          "file_id": "sample_budget_xlsx",
+          "filename": "sample-budget.xlsx",
+          "rank": 1,
+          "score": 0.2662,
+          "citation_label": "Summary · A1:F5",
+          "source_locator": {
+            "source_format": "xlsx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": "Summary",
+            "cell_range": "A1:F5",
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Scenario | Users | Upload target | Support load | Model cost | Owner Pilot | 40 | 120 | 6 | 1800 | Ops Department rollout | 180 | 540 | 20 | 6200 | IT Knowledge refresh | 260 | 780 | 24 | 9100 | AI Team Executive review…"
+        },
+        {
+          "chunk_id": "sample_budget_xlsx:block-4",
+          "file_id": "sample_budget_xlsx",
+          "filename": "sample-budget.xlsx",
+          "rank": 2,
+          "score": 0.0859,
+          "citation_label": "Timeline · A1:D5",
+          "source_locator": {
+            "source_format": "xlsx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": "Timeline",
+            "cell_range": "A1:D5",
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Milestone | Owner | Week | Output Contract freeze | Backend | W1 | API + payload schema Runtime sample parsers | AI Runtime | W2 | txt/md/json/pdf/docx/xlsx/pptx Admin upload UI | Web | W3 | drag-and-drop + status list…"
+        }
+      ],
+      "top_score": 0.2662,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 0.993,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_xlsx_004",
+      "task_type": "table_lookup",
+      "format_family": "xlsx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Assumption | Value Average docs per uploader | 3 Pilot answer latency target (s) | 8 Target citation accuracy | 0.95 Support staffing ratio | 0.12 Local model provider | Ollama。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_budget_xlsx:block-3",
+          "file_id": "sample_budget_xlsx",
+          "filename": "sample-budget.xlsx",
+          "rank": 1,
+          "score": 0.1803,
+          "citation_label": "Assumptions · A1:B6",
+          "source_locator": {
+            "source_format": "xlsx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": "Assumptions",
+            "cell_range": "A1:B6",
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Assumption | Value Average docs per uploader | 3 Pilot answer latency target (s) | 8 Target citation accuracy | 0.95 Support staffing ratio | 0.12 Local model provider | Ollama"
+        }
+      ],
+      "top_score": 0.1803,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 0.911,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_xlsx_005",
+      "task_type": "same_file_multi_block",
+      "format_family": "xlsx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Milestone | Owner | Week | Output Contract freeze | Backend | W1 | API + payload schema Runtime sample parsers | AI Runtime | W2 | txt/md/json/pdf/docx/xlsx/pptx Admin upload UI | Web | W3 | drag-and-drop + status list…。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_budget_xlsx:block-4",
+          "file_id": "sample_budget_xlsx",
+          "filename": "sample-budget.xlsx",
+          "rank": 1,
+          "score": 0.2674,
+          "citation_label": "Timeline · A1:D5",
+          "source_locator": {
+            "source_format": "xlsx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": "Timeline",
+            "cell_range": "A1:D5",
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": null
+          },
+          "snippet": "Milestone | Owner | Week | Output Contract freeze | Backend | W1 | API + payload schema Runtime sample parsers | AI Runtime | W2 | txt/md/json/pdf/docx/xlsx/pptx Admin upload UI | Web | W3 | drag-and-drop + status list…"
+        }
+      ],
+      "top_score": 0.2674,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.149,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_pptx_001",
+      "task_type": "table_lookup",
+      "format_family": "pptx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Milestone | Owner | Outcome Contract freeze | Backend | Upload/config APIs Parser baseline | AI Runtime | 7-format parser set Admin workflow | Web | Upload + status UI Eval baseline | QA | Seed eval + refusals。 根据检索到的资料，Office document ingestion sample deck This deck is a real PPTX sample for parsing titles, bullets, slide numbers, and chart objects during retrieval testing. Slide parsing checks • slide title extraction • bullet preser…。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_training_deck_pptx:block-3",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 1,
+          "score": 0.1671,
+          "citation_label": "Slide 2 · Rollout milestones",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 2,
+            "slide_title": "Rollout milestones",
+            "block_label": "table-1",
+            "json_path": null
+          },
+          "snippet": "Milestone | Owner | Outcome Contract freeze | Backend | Upload/config APIs Parser baseline | AI Runtime | 7-format parser set Admin workflow | Web | Upload + status UI Eval baseline | QA | Seed eval + refusals"
+        },
+        {
+          "chunk_id": "sample_training_deck_pptx:block-1",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 2,
+          "score": 0.02,
+          "citation_label": "Slide 1 · ATLAS KNOWLEDGE ROLLOUT",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 1,
+            "slide_title": "ATLAS KNOWLEDGE ROLLOUT",
+            "block_label": "slide-body-1",
+            "json_path": null
+          },
+          "snippet": "Office document ingestion sample deck This deck is a real PPTX sample for parsing titles, bullets, slide numbers, and chart objects during retrieval testing. Slide parsing checks • slide title extraction • bullet preser…"
+        },
+        {
+          "chunk_id": "sample_training_deck_pptx:block-5",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 3,
+          "score": 0.02,
+          "citation_label": "Slide 3 · Expected citation locators",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 3,
+            "slide_title": "Expected citation locators",
+            "block_label": "table-1",
+            "json_path": null
+          },
+          "snippet": "Artifact | Citation locator PDF | page number DOCX | heading path / paragraph XLSX | sheet + range PPTX | slide + title"
+        }
+      ],
+      "top_score": 0.1671,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.116,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_pptx_002",
+      "task_type": "same_file_multi_block",
+      "format_family": "pptx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Office document ingestion sample deck This deck is a real PPTX sample for parsing titles, bullets, slide numbers, and chart objects during retrieval testing. Slide parsing checks • slide title extraction • bullet preser…。 根据检索到的资料，Artifact | Citation locator PDF | page number DOCX | heading path / paragraph XLSX | sheet + range PPTX | slide + title。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_training_deck_pptx:block-1",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 1,
+          "score": 0.3905,
+          "citation_label": "Slide 1 · ATLAS KNOWLEDGE ROLLOUT",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 1,
+            "slide_title": "ATLAS KNOWLEDGE ROLLOUT",
+            "block_label": "slide-body-1",
+            "json_path": null
+          },
+          "snippet": "Office document ingestion sample deck This deck is a real PPTX sample for parsing titles, bullets, slide numbers, and chart objects during retrieval testing. Slide parsing checks • slide title extraction • bullet preser…"
+        },
+        {
+          "chunk_id": "sample_training_deck_pptx:block-5",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 2,
+          "score": 0.1289,
+          "citation_label": "Slide 3 · Expected citation locators",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 3,
+            "slide_title": "Expected citation locators",
+            "block_label": "table-1",
+            "json_path": null
+          },
+          "snippet": "Artifact | Citation locator PDF | page number DOCX | heading path / paragraph XLSX | sheet + range PPTX | slide + title"
+        }
+      ],
+      "top_score": 0.3905,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.053,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 0.75,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_pptx_003",
+      "task_type": "table_lookup",
+      "format_family": "pptx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Milestone | Owner | Outcome Contract freeze | Backend | Upload/config APIs Parser baseline | AI Runtime | 7-format parser set Admin workflow | Web | Upload + status UI Eval baseline | QA | Seed eval + refusals。 根据检索到的资料，Office document ingestion sample deck This deck is a real PPTX sample for parsing titles, bullets, slide numbers, and chart objects during retrieval testing. Slide parsing checks • slide title extraction • bullet preser…。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_training_deck_pptx:block-3",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 1,
+          "score": 0.3315,
+          "citation_label": "Slide 2 · Rollout milestones",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 2,
+            "slide_title": "Rollout milestones",
+            "block_label": "table-1",
+            "json_path": null
+          },
+          "snippet": "Milestone | Owner | Outcome Contract freeze | Backend | Upload/config APIs Parser baseline | AI Runtime | 7-format parser set Admin workflow | Web | Upload + status UI Eval baseline | QA | Seed eval + refusals"
+        },
+        {
+          "chunk_id": "sample_training_deck_pptx:block-1",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 2,
+          "score": 0.02,
+          "citation_label": "Slide 1 · ATLAS KNOWLEDGE ROLLOUT",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 1,
+            "slide_title": "ATLAS KNOWLEDGE ROLLOUT",
+            "block_label": "slide-body-1",
+            "json_path": null
+          },
+          "snippet": "Office document ingestion sample deck This deck is a real PPTX sample for parsing titles, bullets, slide numbers, and chart objects during retrieval testing. Slide parsing checks • slide title extraction • bullet preser…"
+        },
+        {
+          "chunk_id": "sample_training_deck_pptx:block-5",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 3,
+          "score": 0.02,
+          "citation_label": "Slide 3 · Expected citation locators",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 3,
+            "slide_title": "Expected citation locators",
+            "block_label": "table-1",
+            "json_path": null
+          },
+          "snippet": "Artifact | Citation locator PDF | page number DOCX | heading path / paragraph XLSX | sheet + range PPTX | slide + title"
+        }
+      ],
+      "top_score": 0.3315,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.162,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_pptx_004",
+      "task_type": "table_lookup",
+      "format_family": "pptx",
+      "must_answer": true,
+      "observed_answer": "根据检索到的资料，Milestone | Owner | Outcome Contract freeze | Backend | Upload/config APIs Parser baseline | AI Runtime | 7-format parser set Admin workflow | Web | Upload + status UI Eval baseline | QA | Seed eval + refusals。 根据检索到的资料，Office document ingestion sample deck This deck is a real PPTX sample for parsing titles, bullets, slide numbers, and chart objects during retrieval testing. Slide parsing checks • slide title extraction • bullet preser…。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_training_deck_pptx:block-3",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 1,
+          "score": 0.2266,
+          "citation_label": "Slide 2 · Rollout milestones",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 2,
+            "slide_title": "Rollout milestones",
+            "block_label": "table-1",
+            "json_path": null
+          },
+          "snippet": "Milestone | Owner | Outcome Contract freeze | Backend | Upload/config APIs Parser baseline | AI Runtime | 7-format parser set Admin workflow | Web | Upload + status UI Eval baseline | QA | Seed eval + refusals"
+        },
+        {
+          "chunk_id": "sample_training_deck_pptx:block-1",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 2,
+          "score": 0.04,
+          "citation_label": "Slide 1 · ATLAS KNOWLEDGE ROLLOUT",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 1,
+            "slide_title": "ATLAS KNOWLEDGE ROLLOUT",
+            "block_label": "slide-body-1",
+            "json_path": null
+          },
+          "snippet": "Office document ingestion sample deck This deck is a real PPTX sample for parsing titles, bullets, slide numbers, and chart objects during retrieval testing. Slide parsing checks • slide title extraction • bullet preser…"
+        },
+        {
+          "chunk_id": "sample_training_deck_pptx:block-5",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 3,
+          "score": 0.02,
+          "citation_label": "Slide 3 · Expected citation locators",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 3,
+            "slide_title": "Expected citation locators",
+            "block_label": "table-1",
+            "json_path": null
+          },
+          "snippet": "Artifact | Citation locator PDF | page number DOCX | heading path / paragraph XLSX | sheet + range PPTX | slide + title"
+        }
+      ],
+      "top_score": 0.2266,
+      "refusal": false,
+      "finish_reason": "stop",
+      "latency_ms": 1.163,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 1.0,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "answered"
+    },
+    {
+      "question_id": "q_pptx_005",
+      "task_type": "policy_flow_answer",
+      "format_family": "pptx",
+      "must_answer": true,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PPT 第 3 页为什么说结构化 locator 有帮助？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_training_deck_pptx:block-5",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 1,
+          "score": 0.119,
+          "citation_label": "Slide 3 · Expected citation locators",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 3,
+            "slide_title": "Expected citation locators",
+            "block_label": "table-1",
+            "json_path": null
+          },
+          "snippet": "Artifact | Citation locator PDF | page number DOCX | heading path / paragraph XLSX | sheet + range PPTX | slide + title"
+        }
+      ],
+      "top_score": 0.119,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 1.007,
+      "expected_file_hit": true,
+      "citation_locator_hit": true,
+      "answer_point_hit_rate": 0.0,
+      "passed": false,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    },
+    {
+      "question_id": "q_refuse_001",
+      "task_type": "insufficient_evidence",
+      "format_family": "must_refuse",
+      "must_answer": false,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：公司的股票期权解锁周期是多少？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_catalog_json:block-9",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 1,
+          "score": 0.1401,
+          "citation_label": "$.policies[1].rules[2]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[1].rules[2]"
+          },
+          "snippet": "$.policies[1].rules[2]: 缺少发票默认不予报销"
+        }
+      ],
+      "top_score": 0.1401,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 1.156,
+      "expected_file_hit": null,
+      "citation_locator_hit": null,
+      "answer_point_hit_rate": null,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    },
+    {
+      "question_id": "q_refuse_002",
+      "task_type": "insufficient_evidence",
+      "format_family": "must_refuse",
+      "must_answer": false,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：员工餐厅本周五的午餐菜单是什么？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_md:block-7",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 1,
+          "score": 0.0619,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-7",
+            "json_path": null
+          },
+          "snippet": "单笔住宿费用超过 800 元需要补充行程说明。"
+        }
+      ],
+      "top_score": 0.0619,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 1.09,
+      "expected_file_hit": null,
+      "citation_locator_hit": null,
+      "answer_point_hit_rate": null,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    },
+    {
+      "question_id": "q_refuse_003",
+      "task_type": "insufficient_evidence",
+      "format_family": "must_refuse",
+      "must_answer": false,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：生产环境 Postgres 的真实管理员密码是什么？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_md:block-8",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 1,
+          "score": 0.0577,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-8",
+            "json_path": null
+          },
+          "snippet": "缺少发票时，默认不予报销，除非财务主管书面批准。"
+        }
+      ],
+      "top_score": 0.0577,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 1.271,
+      "expected_file_hit": null,
+      "citation_locator_hit": null,
+      "answer_point_hit_rate": null,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    },
+    {
+      "question_id": "q_refuse_004",
+      "task_type": "insufficient_evidence",
+      "format_family": "must_refuse",
+      "must_answer": false,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：公司员工家庭住址列表在哪里？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_catalog_json:block-8",
+          "file_id": "sample_policy_catalog_json",
+          "filename": "policy-catalog.json",
+          "rank": 1,
+          "score": 0.0723,
+          "citation_label": "$.policies[1].rules[1]",
+          "source_locator": {
+            "source_format": "json",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": null,
+            "json_path": "$.policies[1].rules[1]"
+          },
+          "snippet": "$.policies[1].rules[1]: 住宿费用超过800元需补充说明"
+        }
+      ],
+      "top_score": 0.0723,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 1.098,
+      "expected_file_hit": null,
+      "citation_locator_hit": null,
+      "answer_point_hit_rate": null,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    },
+    {
+      "question_id": "q_refuse_005",
+      "task_type": "insufficient_evidence",
+      "format_family": "must_refuse",
+      "must_answer": false,
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：下个季度 DeepSeek 对比 Qwen 的最终胜率是多少？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_md:block-3",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 1,
+          "score": 0.1215,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-3",
+            "json_path": null
+          },
+          "snippet": "年假需要至少提前 3 个工作日发起申请。"
+        }
+      ],
+      "top_score": 0.1215,
+      "refusal": true,
+      "finish_reason": "refusal",
+      "latency_ms": 1.174,
+      "expected_file_hit": null,
+      "citation_locator_hit": null,
+      "answer_point_hit_rate": null,
+      "passed": true,
+      "evidence_min_score": null,
+      "threshold_decision": "refused"
+    }
+  ],
+  "failures": [
+    {
+      "question_id": "q_md_001",
+      "failure_type": "answer_point_miss",
+      "observed_answer": "根据检索到的资料，连续请假超过 5 个工作日需要直属主管和 HR 双重审批。 根据检索到的资料，单笔住宿费用超过 800 元需要补充行程说明。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_md:block-3",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 1,
+          "score": 0.9319,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-3",
+            "json_path": null
+          },
+          "snippet": "年假需要至少提前 3 个工作日发起申请。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-4",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 2,
+          "score": 0.3239,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-4",
+            "json_path": null
+          },
+          "snippet": "连续请假超过 5 个工作日需要直属主管和 HR 双重审批。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-7",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 3,
+          "score": 0.2135,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-7",
+            "json_path": null
+          },
+          "snippet": "单笔住宿费用超过 800 元需要补充行程说明。"
+        }
+      ],
+      "notes": "Observed answer missed all expected answer points."
+    },
+    {
+      "question_id": "q_md_005",
+      "failure_type": "answer_point_miss",
+      "observed_answer": "根据检索到的资料，年假需要至少提前 3 个工作日发起申请。 根据检索到的资料，差旅结束后 10 个自然日内提交报销。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_employee_handbook_md:block-8",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 1,
+          "score": 0.6665,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-8",
+            "json_path": null
+          },
+          "snippet": "缺少发票时，默认不予报销，除非财务主管书面批准。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-6",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 2,
+          "score": 0.2134,
+          "citation_label": "员工手册节选 / 差旅报销",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "差旅报销"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-6",
+            "json_path": null
+          },
+          "snippet": "差旅结束后 10 个自然日内提交报销。"
+        },
+        {
+          "chunk_id": "sample_employee_handbook_md:block-3",
+          "file_id": "sample_employee_handbook_md",
+          "filename": "employee-handbook.md",
+          "rank": 3,
+          "score": 0.1247,
+          "citation_label": "员工手册节选 / 请假政策",
+          "source_locator": {
+            "source_format": "md",
+            "page_no": null,
+            "heading_path": [
+              "员工手册节选",
+              "请假政策"
+            ],
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "list-item-3",
+            "json_path": null
+          },
+          "snippet": "年假需要至少提前 3 个工作日发起申请。"
+        }
+      ],
+      "notes": "Observed answer missed all expected answer points."
+    },
+    {
+      "question_id": "q_pdf_001",
+      "failure_type": "retrieval_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例里，差旅报销应在行程结束后多久内提交？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1042,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "notes": "Runtime refused a must-answer sample."
+    },
+    {
+      "question_id": "q_pdf_001",
+      "failure_type": "answer_point_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例里，差旅报销应在行程结束后多久内提交？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1042,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "notes": "Observed answer missed all expected answer points."
+    },
+    {
+      "question_id": "q_pdf_002",
+      "failure_type": "retrieval_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例中，年假需要提前多久提交？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1145,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "notes": "Runtime refused a must-answer sample."
+    },
+    {
+      "question_id": "q_pdf_002",
+      "failure_type": "answer_point_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例中，年假需要提前多久提交？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1145,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "notes": "Observed answer missed all expected answer points."
+    },
+    {
+      "question_id": "q_pdf_003",
+      "failure_type": "retrieval_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例中，超过5个连续工作日的请假需要哪些批准？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1006,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "notes": "Runtime refused a must-answer sample."
+    },
+    {
+      "question_id": "q_pdf_003",
+      "failure_type": "answer_point_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例中，超过5个连续工作日的请假需要哪些批准？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1006,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "notes": "Observed answer missed all expected answer points."
+    },
+    {
+      "question_id": "q_pdf_004",
+      "failure_type": "retrieval_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例中，酒店费用超过多少需要业务说明？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1077,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "notes": "Runtime refused a must-answer sample."
+    },
+    {
+      "question_id": "q_pdf_004",
+      "failure_type": "answer_point_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PDF 样例中，酒店费用超过多少需要业务说明？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.1077,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        }
+      ],
+      "notes": "Observed answer missed all expected answer points."
+    },
+    {
+      "question_id": "q_pdf_005",
+      "failure_type": "answer_point_miss",
+      "observed_answer": "根据检索到的资料，Reference document for PDF parsing, page-number citation checks, and mixed prose/table ingestion.。 根据检索到的资料，Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_policy_pdf:block-24",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 1,
+          "score": 0.2604,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-24",
+            "json_path": null
+          },
+          "snippet": "Sample note: this PDF is intentionally compact but includes headings, paragraphs, and a locator"
+        },
+        {
+          "chunk_id": "sample_policy_pdf:block-2",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 2,
+          "score": 0.1476,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-2",
+            "json_path": null
+          },
+          "snippet": "Reference document for PDF parsing, page-number citation checks, and mixed prose/table ingestion."
+        },
+        {
+          "chunk_id": "sample_policy_pdf:block-25",
+          "file_id": "sample_policy_pdf",
+          "filename": "sample-policy.pdf",
+          "rank": 3,
+          "score": 0.1345,
+          "citation_label": "Page 1",
+          "source_locator": {
+            "source_format": "pdf",
+            "page_no": 1,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": null,
+            "slide_title": null,
+            "block_label": "page-1-block-25",
+            "json_path": null
+          },
+          "snippet": "matrix to exercise retrieval extraction."
+        }
+      ],
+      "notes": "Observed answer missed all expected answer points."
+    },
+    {
+      "question_id": "q_xlsx_001",
+      "failure_type": "retrieval_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：Excel 样例中，季度上传目标是多少？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [],
+      "notes": "Runtime refused a must-answer sample."
+    },
+    {
+      "question_id": "q_xlsx_001",
+      "failure_type": "citation_mismatch",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：Excel 样例中，季度上传目标是多少？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [],
+      "notes": "No citation matched expected source files."
+    },
+    {
+      "question_id": "q_xlsx_001",
+      "failure_type": "citation_mismatch",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：Excel 样例中，季度上传目标是多少？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [],
+      "notes": "No citation matched expected locator hints."
+    },
+    {
+      "question_id": "q_xlsx_001",
+      "failure_type": "answer_point_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：Excel 样例中，季度上传目标是多少？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [],
+      "notes": "Observed answer missed all expected answer points."
+    },
+    {
+      "question_id": "q_pptx_005",
+      "failure_type": "retrieval_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PPT 第 3 页为什么说结构化 locator 有帮助？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_training_deck_pptx:block-5",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 1,
+          "score": 0.119,
+          "citation_label": "Slide 3 · Expected citation locators",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 3,
+            "slide_title": "Expected citation locators",
+            "block_label": "table-1",
+            "json_path": null
+          },
+          "snippet": "Artifact | Citation locator PDF | page number DOCX | heading path / paragraph XLSX | sheet + range PPTX | slide + title"
+        }
+      ],
+      "notes": "Runtime refused a must-answer sample."
+    },
+    {
+      "question_id": "q_pptx_005",
+      "failure_type": "answer_point_miss",
+      "observed_answer": "当前检索到的证据不足以可靠回答这个问题：PPT 第 3 页为什么说结构化 locator 有帮助？。请换一种问法，或先补充相关知识文件后再试。",
+      "observed_citations": [
+        {
+          "chunk_id": "sample_training_deck_pptx:block-5",
+          "file_id": "sample_training_deck_pptx",
+          "filename": "sample-training-deck.pptx",
+          "rank": 1,
+          "score": 0.119,
+          "citation_label": "Slide 3 · Expected citation locators",
+          "source_locator": {
+            "source_format": "pptx",
+            "page_no": null,
+            "heading_path": null,
+            "paragraph_index": null,
+            "sheet_name": null,
+            "cell_range": null,
+            "slide_no": 3,
+            "slide_title": "Expected citation locators",
+            "block_label": "table-1",
+            "json_path": null
+          },
+          "snippet": "Artifact | Citation locator PDF | page number DOCX | heading path / paragraph XLSX | sheet + range PPTX | slide + title"
+        }
+      ],
+      "notes": "Observed answer missed all expected answer points."
+    }
+  ],
+  "failure_type_counts": {
+    "answer_point_miss": 9,
+    "citation_mismatch": 2,
+    "retrieval_miss": 6
+  },
+  "quality_gate": {
+    "gate_id": "k7-llama3.2-prompt-v2-local-v1",
+    "passed": true,
+    "checks": [
+      {
+        "name": "mode",
+        "passed": true,
+        "expected": "runtime-local",
+        "actual": "runtime-local",
+        "reason": "matched expected value"
+      },
+      {
+        "name": "model_id",
+        "passed": true,
+        "expected": "llama3.2:latest",
+        "actual": "llama3.2:latest",
+        "reason": "matched expected value"
+      },
+      {
+        "name": "generation_config",
+        "passed": true,
+        "expected": {
+          "system_prompt_version": "prompt_v2",
+          "temperature": 0.2,
+          "max_output_tokens": 1024
+        },
+        "actual": {
+          "system_prompt_version": "prompt_v2",
+          "temperature": 0.2,
+          "max_output_tokens": 1024
+        },
+        "reason": "matched expected value"
+      },
+      {
+        "name": "passed_count",
+        "passed": true,
+        "expected": {
+          "minimum": 26
+        },
+        "actual": 31,
+        "reason": "31 meets minimum 26"
+      },
+      {
+        "name": "metrics.retrieval_recall_at_k",
+        "passed": true,
+        "expected": {
+          "minimum": 0.95
+        },
+        "actual": 0.9714,
+        "reason": "0.9714 meets minimum 0.95"
+      },
+      {
+        "name": "metrics.citation_accuracy",
+        "passed": true,
+        "expected": {
+          "minimum": 0.95
+        },
+        "actual": 0.9714,
+        "reason": "0.9714 meets minimum 0.95"
+      },
+      {
+        "name": "metrics.refusal_correctness",
+        "passed": true,
+        "expected": {
+          "minimum": 1.0
+        },
+        "actual": 1.0,
+        "reason": "1.0 meets minimum 1.0"
+      },
+      {
+        "name": "metrics.grounded_correctness",
+        "passed": true,
+        "expected": {
+          "minimum": 0.55
+        },
+        "actual": 0.7357,
+        "reason": "0.7357 meets minimum 0.55"
+      },
+      {
+        "name": "failure_type_counts.unexpected_runtime_error",
+        "passed": true,
+        "expected": {
+          "maximum": 0
+        },
+        "actual": 0,
+        "reason": "0 is within maximum 0"
+      }
+    ]
+  }
+}

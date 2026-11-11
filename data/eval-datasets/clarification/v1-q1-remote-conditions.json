@@ -1,0 +1,47 @@
+{
+  "schema_version": "a1_q1_remote_conditions_v1",
+  "dataset": {
+    "id": "v1-q1",
+    "sha256": "sha256:5aef680a679e79afe087f969cdd1bc02814231064d70ce98317aa97ceae11373"
+  },
+  "scope": {
+    "snapshot_id": "snap_004",
+    "manifest_hash": "sha256:b537a23e61a026ad66f1eebf1b9a6bb518ea1051258fedc390f227f050ef12f6",
+    "revision_ids": [
+      "rev_0e89b60db82f963ac810",
+      "rev_12b8f8f7a681f9d4fd6a",
+      "rev_5cc8b69151993dbd6632"
+    ],
+    "resolved_at": "2026-08-04T12:23:14Z"
+  },
+  "retrieval": {
+    "config_version": "rcfg_001",
+    "strategy": "native_dense_v1",
+    "embedding_model": "qwen3-embedding:0.6b",
+    "top_k": 3,
+    "rerank_enabled": false,
+    "evidence_min_score": 0.51
+  },
+  "baseline": {
+    "config_version": "cfg_001",
+    "model_id": "qwen3:14b",
+    "system_prompt_version": "prompt_v7",
+    "answer_policy_version": null,
+    "response_style": "concise",
+    "temperature": 0,
+    "top_p": 1,
+    "max_output_tokens": 1024
+  },
+  "candidate": {
+    "config_version": "cfg_002",
+    "model_id": "qwen3:14b",
+    "system_prompt_version": "prompt_v8",
+    "answer_policy_version": "answer_policy_v1",
+    "response_style": "concise",
+    "temperature": 0,
+    "top_p": 1,
+    "max_output_tokens": 1024
+  },
+  "router_policy_version": "conversation_router_v1",
+  "candidate_gate_id": "a1-q1-candidate-v1"
+}

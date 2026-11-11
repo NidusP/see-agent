@@ -1,0 +1,125 @@
+{
+  "probe_version": "provider-stability-v1",
+  "run_id": "provider-stability-20260806T030918424901Z",
+  "started_at": "2026-08-06T03:09:18.428416Z",
+  "evaluation_purpose": "provider_stability_probe",
+  "quality_eligible": false,
+  "fallback_used": false,
+  "samples": [
+    {
+      "kind": "short_text",
+      "transport": "non_stream",
+      "index": 1,
+      "status": "ok",
+      "completion_latency_ms": 57873.63,
+      "first_event_latency_ms": null,
+      "output_chars": 6,
+      "completion_tokens": 3,
+      "finish_reason": "stop",
+      "parsed": true
+    },
+    {
+      "kind": "short_text",
+      "transport": "non_stream",
+      "index": 2,
+      "status": "ok",
+      "completion_latency_ms": 2738.19,
+      "first_event_latency_ms": null,
+      "output_chars": 6,
+      "completion_tokens": 3,
+      "finish_reason": "stop",
+      "parsed": true
+    },
+    {
+      "kind": "short_text",
+      "transport": "non_stream",
+      "index": 3,
+      "status": "ok",
+      "completion_latency_ms": 2498.554,
+      "first_event_latency_ms": null,
+      "output_chars": 6,
+      "completion_tokens": 3,
+      "finish_reason": "stop",
+      "parsed": true
+    },
+    {
+      "kind": "structured_json",
+      "transport": "non_stream",
+      "index": 1,
+      "status": "ok",
+      "completion_latency_ms": 8059.274,
+      "first_event_latency_ms": null,
+      "output_chars": 15,
+      "completion_tokens": 6,
+      "finish_reason": "stop",
+      "parsed": true
+    },
+    {
+      "kind": "structured_json",
+      "transport": "non_stream",
+      "index": 2,
+      "status": "ok",
+      "completion_latency_ms": 5010.272,
+      "first_event_latency_ms": null,
+      "output_chars": 15,
+      "completion_tokens": 6,
+      "finish_reason": "stop",
+      "parsed": true
+    },
+    {
+      "kind": "structured_json",
+      "transport": "non_stream",
+      "index": 3,
+      "status": "ok",
+      "completion_latency_ms": 5532.251,
+      "first_event_latency_ms": null,
+      "output_chars": 15,
+      "completion_tokens": 6,
+      "finish_reason": "stop",
+      "parsed": true
+    },
+    {
+      "kind": "stream_text",
+      "transport": "stream",
+      "index": 1,
+      "status": "ok",
+      "completion_latency_ms": 2797.275,
+      "first_event_latency_ms": 1830.418,
+      "output_chars": 6,
+      "completion_tokens": null,
+      "finish_reason": "stop",
+      "parsed": true
+    }
+  ],
+  "configuration": {
+    "provider": "ollama_native",
+    "model_id": "qwen3:14b",
+    "endpoint": "http://127.0.0.1:11434/v1",
+    "timeout_seconds": 90.0,
+    "repetitions": 3,
+    "include_stream": true
+  },
+  "model_list": {
+    "status": "ok",
+    "url": "http://127.0.0.1:11434/api/tags",
+    "latency_ms": 1146.756,
+    "target_present": true,
+    "model_count": 3,
+    "model_ids": [
+      "all-minilm:latest",
+      "qwen3-embedding:0.6b",
+      "qwen3:14b"
+    ]
+  },
+  "finished_at": "2026-08-06T03:10:44.086603Z",
+  "passed": true,
+  "summary": {
+    "sample_count": 7,
+    "success_count": 7,
+    "failure_count": 0,
+    "completion_latency_min_ms": 2498.554,
+    "completion_latency_median_ms": 5010.272,
+    "completion_latency_p95_ms": 57873.63,
+    "first_event_latency_median_ms": 1830.418
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://see-agent.local/eval/a1-q1-remote-conditions.schema.json",
+  "title": "A1 Q1 Remote Evaluation Conditions",
+  "type": "object",
+  "required": ["schema_version", "dataset", "scope", "retrieval", "baseline", "candidate", "router_policy_version", "candidate_gate_id"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"enum": ["a1_q1_remote_conditions_v1", "a1_q1_remote_conditions_v2", "a1_q1_remote_conditions_v3"]},
+    "dataset": {
+      "type": "object",
+      "required": ["id", "sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "scope": {"$ref": "#/$defs/knowledgeScope"},
+    "retrieval": {"$ref": "#/$defs/retrieval"},
+    "baseline": {"$ref": "#/$defs/roleConfig"},
+    "candidate": {"$ref": "#/$defs/roleConfig"},
+    "router_policy_version": {"const": "conversation_router_v1"},
+    "candidate_gate_id": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "knowledgeScope": {
+      "type": "object",
+      "required": ["snapshot_id", "manifest_hash", "revision_ids", "resolved_at"],
+      "additionalProperties": false,
+      "properties": {
+        "snapshot_id": {"type": "string", "minLength": 1},
+        "manifest_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "revision_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "resolved_at": {"type": "string", "minLength": 1}
+      }
+    },
+    "retrieval": {
+      "type": "object",
+      "required": ["config_version", "strategy", "embedding_model", "top_k", "rerank_enabled", "evidence_min_score"],
+      "additionalProperties": false,
+      "properties": {
+        "config_version": {"type": "string", "minLength": 1},
+        "strategy": {"enum": ["lexical_compat_v1", "native_dense_v1"]},
+        "embedding_model": {"type": "string", "minLength": 1},
+        "top_k": {"type": "integer", "minimum": 1},
+        "rerank_enabled": {"type": "boolean"},
+        "evidence_min_score": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+      }
+    },
+    "roleConfig": {
+      "type": "object",
+      "required": ["config_version", "model_id", "system_prompt_version", "answer_policy_version", "response_style", "temperature", "top_p", "max_output_tokens"],
+      "additionalProperties": false,
+      "properties": {
+        "config_version": {"type": "string", "minLength": 1},
+        "model_id": {"type": "string", "minLength": 1},
+        "system_prompt_version": {"type": "string", "minLength": 1},
+        "answer_policy_version": {"type": ["string", "null"]},
+        "response_style": {"type": "string", "minLength": 1},
+        "temperature": {"type": "number", "minimum": 0},
+        "top_p": {"type": "number", "minimum": 0, "maximum": 1},
+        "max_output_tokens": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

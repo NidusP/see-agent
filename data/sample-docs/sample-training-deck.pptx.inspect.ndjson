@@ -1,0 +1,19 @@
+{"kind":"deck","id":"pr/d2yj6v","name":"Deck"}
+{"kind":"layout","layoutId":"1ce3ed14-298c-4342-ade9-aa066c54cb29","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"1e35dcda-841b-4eb5-8214-997595640c53","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/k8b2b5","slide":1,"title":"ATLAS KNOWLEDGE ROLLOUT","textShapes":4}
+{"kind":"textbox","id":"sh/47y1kre1","slide":1,"text":"ATLAS KNOWLEDGE ROLLOUT","textPreview":"ATLAS KNOWLEDGE ROLLOUT","textChars":23,"textLines":1,"bbox":[72,54,320,24]}
+{"kind":"textbox","id":"sh/bm58z25k","slide":1,"text":"Office document ingestion sample deck","textPreview":"Office document ingestion sample deck","textChars":37,"textLines":1,"bbox":[72,92,520,150]}
+{"kind":"textbox","id":"sh/m1cfa9w3","slide":1,"text":"This deck is a real PPTX sample for parsing titles, bullets, slide numbers, and chart objects during retrieval testing.","textPreview":"This deck is a real PPTX sample for parsing titles, bullets, slide numbers, and chart objects during retrieval testing.","textChars":119,"textLines":1,"bbox":[72,244,520,200]}
+{"kind":"textbox","id":"sh/tgfmlkjm","slide":1,"text":"Slide parsing checks\n• slide title extraction\n• bullet preservation\n• source locator = slide number + title\n• optional speaker notes evaluation","textPreview":"Slide parsing checks | • slide title extraction | • bullet preservation | • source locator = slide number + title | • optional speaker no...","textChars":143,"textLines":5,"bbox":[650,110,540,360]}
+{"kind":"notes","id":"nt/k8b2b5","slide":1,"text":""}
+{"kind":"slide","id":"sl/l8xlkq","slide":2,"title":"Rollout milestones","textShapes":1}
+{"kind":"textbox","id":"sh/a9w3m94f","slide":2,"text":"Rollout milestones","textPreview":"Rollout milestones","textChars":18,"textLines":1,"bbox":[72,60,700,42]}
+{"kind":"chart","id":"ch/0je9cvix","slide":2,"name":"","chartType":"bar","bbox":[760,150,410,250]}
+{"kind":"table","id":"tb/g7adsji5","slide":2,"name":"","rows":5,"cols":3,"preview":"Milestone | Owner | Outcome","bbox":[72,128,660,300]}
+{"kind":"notes","id":"nt/l8xlkq","slide":2,"text":""}
+{"kind":"slide","id":"sl/y2dsoz","slide":3,"title":"Expected citation locators","textShapes":2}
+{"kind":"textbox","id":"sh/je9cvixc","slide":3,"text":"Expected citation locators","textPreview":"Expected citation locators","textChars":26,"textLines":1,"bbox":[72,60,680,40]}
+{"kind":"textbox","id":"sh/1gvy90je","slide":3,"text":"Retriever note\nStructured locators make answer sources easier to audit and easier to render in the chat UI.","textPreview":"Retriever note | Structured locators make answer sources easier to audit and easier to render in the chat UI.","textChars":107,"textLines":2,"bbox":[730,150,390,220]}
+{"kind":"table","id":"tb/t83itgfm","slide":3,"name":"","rows":5,"cols":2,"preview":"Artifact | Citation locator","bbox":[72,126,610,250]}
+{"kind":"notes","id":"nt/y2dsoz","slide":3,"text":""}

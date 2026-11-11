@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://see-agent.local/contracts/knowledge-evolution.schema.json",
+  "title": "KnowledgeEvolution",
+  "description": "K1 shared vocabulary for immutable revisions, snapshots, events and answer freshness.",
+  "type": "object",
+  "properties": {
+    "document_status": {
+      "type": "string",
+      "enum": ["active", "disabled", "deleted"]
+    },
+    "revision_status": {
+      "type": "string",
+      "enum": ["legacy_unpublished", "uploaded", "queued", "indexing", "ready", "published", "superseded", "failed", "disabled", "deleted"]
+    },
+    "snapshot_status": {
+      "type": "string",
+      "enum": ["building", "published", "retired"]
+    },
+    "update_event_type": {
+      "type": "string",
+      "enum": ["uploaded", "indexed", "published", "replaced", "disabled", "deleted", "reindexed"]
+    },
+    "freshness_status": {
+      "type": "string",
+      "enum": ["current", "possibly_stale", "revalidated", "unknown"]
+    },
+    "revalidation_outcome": {
+      "type": "string",
+      "enum": ["still_valid", "needs_update", "insufficient_evidence"]
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,23 @@
+{
+  "request_id": "req_chat_scope_001",
+  "conversation_id": "conv_001",
+  "message_id": "msg_001",
+  "user_query": "住宿费用超过800元时有什么要求？",
+  "model_id": "llama3.2:latest",
+  "config_version": "cfg_002",
+  "retrieval_config_version": "rcfg_001",
+  "knowledge_snapshot_id": "snap_20260714_001",
+  "knowledge_scope": {
+    "snapshot_id": "snap_20260714_001",
+    "manifest_hash": "sha256:manifest-001",
+    "revision_ids": ["rev_travel_policy_002"],
+    "resolved_at": "2026-07-14T00:00:00Z"
+  },
+  "answer_mode": "normal",
+  "response_overrides": {
+    "retrieval_strategy": "lexical_compat_v1",
+    "embedding_model": "baseline-lexical-embedder"
+  },
+  "stream": false,
+  "messages": []
+}

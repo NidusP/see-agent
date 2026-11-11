@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://see-agent.local/contracts/ingestion-task-result.schema.json",
+  "title": "IngestionTaskResult",
+  "type": "object",
+  "required": [
+    "request_id",
+    "task_id",
+    "file_id",
+    "status",
+    "updated_at"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "file_id": {
+      "type": "string"
+    },
+    "document_id": {
+      "type": "string"
+    },
+    "revision_id": {
+      "type": "string"
+    },
+    "delivery_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "succeeded",
+        "failed"
+      ]
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "chunks_created": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "pages_processed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "chunk_manifest_sha256": {
+      "type": "string"
+    },
+    "embedding_model": {
+      "type": "string"
+    },
+    "warning_messages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "error": {
+      "$ref": "#/$defs/ErrorSummary"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "succeeded"
+          }
+        },
+        "required": ["revision_id"]
+      },
+      "then": {
+        "required": ["document_id", "chunk_manifest_sha256"]
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "ErrorSummary": {
+      "type": "object",
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

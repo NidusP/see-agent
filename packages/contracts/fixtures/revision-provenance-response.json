@@ -1,0 +1,64 @@
+{
+  "request_id": "req_chat_scope_001",
+  "conversation_id": "conv_001",
+  "message_id": "msg_answer_002",
+  "assistant_message": {
+    "role": "assistant",
+    "content": "住宿费用超过800元需要额外审批。"
+  },
+  "citations": [
+    {
+      "chunk_id": "chunk_rev_travel_policy_003_001",
+      "file_id": "file_compat_001",
+      "filename": "travel-policy.md",
+      "document_id": "doc_travel_policy",
+      "revision_id": "rev_travel_policy_003",
+      "chunk_content_sha256": "sha256:chunk-001",
+      "knowledge_snapshot_id": "snap_20260714_002",
+      "rank": 1,
+      "score": 0.98,
+      "citation_label": "travel-policy",
+      "source_locator": {
+        "source_format": "md",
+        "heading_path": ["住宿费用"]
+      },
+      "snippet": "超过800元需要额外审批。"
+    }
+  ],
+  "citation_anchors": [
+    {
+      "start_rune": 0,
+      "end_rune": 17,
+      "citation_ranks": [1]
+    }
+  ],
+  "refusal": false,
+  "finish_reason": "stop",
+  "completed_at": "2026-07-14T01:00:00Z",
+  "knowledge_snapshot_id": "snap_20260714_002",
+  "knowledge_snapshot_manifest_hash": "sha256:manifest-002",
+  "freshness_status": "current",
+  "intent": "knowledge_query",
+  "answer_disposition": "grounded_answer",
+  "answer_policy_version": "answer_policy_v1",
+  "execution": {
+    "policy": "performed",
+    "retrieval": {
+      "status": "performed",
+      "strategy": "lexical_compat_v1",
+      "embedding_model": "baseline-lexical-embedder",
+      "collection": "see_agent_chunks",
+      "candidate_count": 1
+    },
+    "generation": {
+      "status": "performed",
+      "provider": "openai_compatible",
+      "model_id": "llama3.2:latest"
+    },
+    "fallback_used": false
+  },
+  "used_citation_ranks": [1],
+  "retrieval_performed": true,
+  "generation_performed": true,
+  "knowledge_used": true
+}

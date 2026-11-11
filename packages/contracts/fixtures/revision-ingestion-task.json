@@ -1,0 +1,18 @@
+{
+  "request_id": "req_revision_001",
+  "task_id": "task_revision_001",
+  "file_id": "file_compat_001",
+  "document_id": "doc_travel_policy",
+  "revision_id": "rev_travel_policy_002",
+  "delivery_id": "delivery_revision_001",
+  "attempt": 1,
+  "filename": "travel-policy.md",
+  "mime_type": "text/markdown",
+  "source_format": "md",
+  "object_uri": "s3://knowledge-docs/kb/doc_travel_policy/rev_travel_policy_002/travel-policy.md",
+  "checksum_sha256": "sha256:revision-content",
+  "effective_at": "2026-07-14T00:00:00Z",
+  "parse_version": "parse_v2",
+  "index_version": "index_v2",
+  "requested_at": "2026-07-14T00:00:00Z"
+}

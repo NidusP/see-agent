@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: see_agent
+      POSTGRES_USER: see_agent
+      POSTGRES_PASSWORD: see_agent_dev
+    ports:
+      - "${SEE_AGENT_POSTGRES_PORT:-15432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U see_agent -d see_agent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    ports:
+      - "${SEE_AGENT_REDIS_PORT:-16379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2025-07-23T15-54-02Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: see_agent
+      MINIO_ROOT_PASSWORD: see_agent_dev
+    ports:
+      - "${SEE_AGENT_MINIO_API_PORT:-19000}:9000"
+      - "${SEE_AGENT_MINIO_CONSOLE_PORT:-19001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.15.4
+    restart: unless-stopped
+    ports:
+      - "${SEE_AGENT_QDRANT_HTTP_PORT:-16333}:6333"
+      - "${SEE_AGENT_QDRANT_GRPC_PORT:-16334}:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          bash -ec 'exec 3<>/dev/tcp/127.0.0.1/6333; printf "GET /healthz HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3; IFS= read -r status <&3; [[ "$$status" == *" 200 "* ]]'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  qdrant-data:

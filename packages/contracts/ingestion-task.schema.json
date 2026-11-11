@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://see-agent.local/contracts/ingestion-task.schema.json",
+  "title": "IngestionTask",
+  "type": "object",
+  "required": [
+    "request_id",
+    "task_id",
+    "file_id",
+    "filename",
+    "mime_type",
+    "source_format",
+    "object_uri",
+    "parse_version",
+    "index_version",
+    "requested_at"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "file_id": {
+      "type": "string"
+    },
+    "document_id": {
+      "type": "string"
+    },
+    "revision_id": {
+      "type": "string"
+    },
+    "delivery_id": {
+      "type": "string"
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "filename": {
+      "type": "string"
+    },
+    "mime_type": {
+      "type": "string"
+    },
+    "source_format": {
+      "type": "string",
+      "enum": [
+        "txt",
+        "md",
+        "json",
+        "pdf",
+        "docx",
+        "xlsx",
+        "pptx"
+      ]
+    },
+    "object_uri": {
+      "type": "string"
+    },
+    "object_size_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checksum_sha256": {
+      "type": "string"
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "parse_version": {
+      "type": "string"
+    },
+    "index_version": {
+      "type": "string"
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "requested_by": {
+      "type": "string"
+    },
+    "preview_only": {
+      "type": "boolean",
+      "default": false
+    },
+    "force_reindex": {
+      "type": "boolean",
+      "default": false
+    },
+    "ingestion_options": {
+      "$ref": "#/$defs/IngestionOptions"
+    },
+    "status_callback_url": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["revision_id"]
+      },
+      "then": {
+        "required": ["document_id", "checksum_sha256"]
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "IngestionOptions": {
+      "type": "object",
+      "properties": {
+        "enable_ocr_fallback": {
+          "type": "boolean",
+          "default": true
+        },
+        "include_pptx_notes": {
+          "type": "boolean",
+          "default": false
+        },
+        "normalize_json_paths": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

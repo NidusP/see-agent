@@ -1,0 +1,12 @@
+{
+  "request_id": "req_legacy_001",
+  "task_id": "task_legacy_001",
+  "file_id": "file_legacy_001",
+  "filename": "legacy-handbook.md",
+  "mime_type": "text/markdown",
+  "source_format": "md",
+  "object_uri": "s3://knowledge-docs/kb/file_legacy_001/legacy-handbook.md",
+  "parse_version": "parse_v1",
+  "index_version": "index_v1",
+  "requested_at": "2026-07-14T00:00:00Z"
+}
