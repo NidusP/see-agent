@@ -35,6 +35,8 @@ published|superseded|ready -> disabled -> deleted
 snapshot: building -> published -> retired
 ```
 
+2026-11-12 增补（已实现）：[可选的发布前知识验收](single-agent-v1-optional-prepublish-onboarding-design.md) 在 `building` 与 `published` 之间增加 `pending_publish`。待发布快照不进入 active pointer，也不被普通问答检索。`GetActivePublishedSnapshot` 只返回 pointer 指向且状态为 `published` 的快照。
+
 - 只有 Backend 的 publish transaction 可以创建 snapshot、写 member manifest、记录 `published` event 和切换 active pointer。
 - Runtime 只能回报 revision 的索引结果；Redis Streams 的 delivery/ack/retry/DLQ 不能改变 published status。
 - `deleted` 先移出 active snapshot；MinIO/Qdrant 物理清理是独立可重试工作，失败不能让新回答重新看到旧 revision。

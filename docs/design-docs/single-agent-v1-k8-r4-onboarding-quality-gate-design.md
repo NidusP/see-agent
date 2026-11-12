@@ -6,6 +6,7 @@
 - 更新日期：`2026-07-18`
 - 工作包：`K8-R4a`
 - 上位设计：[知识演进设计](single-agent-v1-knowledge-evolution-design.md)、[K5 snapshot provenance](single-agent-v1-k5-snapshot-provenance-design.md)、[Q1 质量运营](single-agent-v1-quality-operations-release-design.md)、[K8-R3 校准](single-agent-v1-k8-dense-refusal-calibration-design.md)
+- 后续交互：[可选的发布前知识验收](single-agent-v1-optional-prepublish-onboarding-design.md)（`K8-R4b`，已实现）。问题集和 run 可针对 `pending_publish` 或已发布快照；本文件的 grader、真值审核和退役前置证据仍然有效，但不作为直接发布的硬性阻断。
 
 ## 1. 目标与非目标
 
@@ -41,7 +42,7 @@ Runtime 只接收 Backend 构造的 snapshot-scoped request 并返回 observatio
 
 所有端点 admin-only；每个 mutation 要求 `Idempotency-Key`。具体 OpenAPI 在实现前冻结。
 
-1. `POST /api/admin/onboarding/datasets` 创建 draft，必须指定已发布 snapshot；Backend 读取并保存其 manifest，不能接受客户端伪造 hash。
+1. `POST /api/admin/onboarding/datasets` 创建 draft，必须指定 `pending_publish` 或已发布 snapshot；Backend 读取并保存其 manifest，不能接受客户端伪造 hash。已退役快照不能用来批准新知识。
 2. `POST /api/admin/onboarding/datasets/{id}/cases` 创建 draft case；Backend 校验题型真值、document/revision 属于目标 snapshot、locator 形状和 reviewer。冻结后不得改写；要修订真值则创建 successor dataset。
 3. `POST /api/admin/onboarding/datasets/{id}/freeze` 仅当存在 reviewed must-answer 和 reviewed must-refuse 时计算 canonical case hash，转 `ready`。
 4. `POST /api/admin/onboarding/datasets/{id}/runs` 仅对 ready dataset 创建 queued run；Backend 在同一 read transaction 冻结 active agent/retrieval config pair、dataset hash、snapshot/manifest 和 gate。content-only knowledge update 仍使用现有 active release；若选择不同 candidate config，调用方必须先走 Q1。

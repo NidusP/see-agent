@@ -540,6 +540,48 @@ func (h *Handlers) OnboardingDatasetDetail(w http.ResponseWriter, r *http.Reques
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"dataset": x})
 }
+func (h *Handlers) OnboardingDatasetDrafts(w http.ResponseWriter, r *http.Request) {
+	key, ok := requireIdempotencyKey(w, r)
+	if !ok {
+		return
+	}
+	cases, err := h.service.GenerateOnboardingDrafts(r.Context(), h.lifecycleActorID(r), r.PathValue("dataset_id"), key)
+	if err != nil {
+		h.writeOnboardingQualityError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, map[string]any{"cases": cases})
+}
+
+func (h *Handlers) OnboardingCaseReview(w http.ResponseWriter, r *http.Request) {
+	key, ok := requireIdempotencyKey(w, r)
+	if !ok {
+		return
+	}
+	var payload struct {
+		Question             string   `json:"question"`
+		ExpectedRevisionIDs  []string `json:"expected_revision_ids"`
+		ExpectedLocatorHints []string `json:"expected_locator_hints"`
+		ExpectedAnswerPoints []string `json:"expected_answer_points"`
+	}
+	if r.Body != nil {
+		decoder := json.NewDecoder(r.Body)
+		decoder.DisallowUnknownFields()
+		if err := decoder.Decode(&payload); err != nil && err.Error() != "EOF" {
+			writeValidationError(w, r, "invalid_json", "request body must be valid JSON")
+			return
+		}
+	}
+	item, err := h.service.ReviewOnboardingCase(r.Context(), h.lifecycleActorID(r), r.PathValue("dataset_id"), r.PathValue("case_id"), key, domain.OnboardingCase{
+		Question: payload.Question, ExpectedRevisionIDs: payload.ExpectedRevisionIDs, ExpectedLocatorHints: payload.ExpectedLocatorHints, ExpectedAnswerPoints: payload.ExpectedAnswerPoints,
+	})
+	if err != nil {
+		h.writeOnboardingQualityError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"case": item})
+}
+
 func (h *Handlers) OnboardingDatasetCases(w http.ResponseWriter, r *http.Request) {
 	key, ok := requireIdempotencyKey(w, r)
 	if !ok {
@@ -607,6 +649,8 @@ func (h *Handlers) writeOnboardingQualityError(w http.ResponseWriter, r *http.Re
 		writeNotFound(w, r, "onboarding_quality_resource_not_found", "onboarding quality resource was not found")
 	case errors.Is(err, service.ErrOnboardingQualityInvalid), errors.Is(err, repository.ErrQualityInvalid):
 		writeValidationError(w, r, "invalid_onboarding_quality_operation", "onboarding quality request is invalid")
+	case errors.Is(err, repository.ErrDraftGenerationFailed):
+		writeConflict(w, r, "draft_generation_failed", "无法根据当前知识起草可核验题目，请手工添加题目；这不影响直接发布")
 	case errors.Is(err, repository.ErrQualityConflict):
 		writeConflict(w, r, "onboarding_quality_conflict", err.Error())
 	default:
@@ -1142,17 +1186,78 @@ func (h *Handlers) CreateKnowledgeRevision(w http.ResponseWriter, r *http.Reques
 	writeJSON(w, http.StatusAccepted, result)
 }
 
-func (h *Handlers) PublishKnowledgeRevision(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) PrepareKnowledgeRevisionPublish(w http.ResponseWriter, r *http.Request) {
 	key, ok := requireIdempotencyKey(w, r)
 	if !ok {
 		return
 	}
-	result, err := h.service.PublishKnowledgeRevision(r.Context(), h.lifecycleActorID(r), r.PathValue("revision_id"), key)
+	result, err := h.service.PrepareKnowledgeRevisionPublish(r.Context(), h.lifecycleActorID(r), r.PathValue("revision_id"), key)
 	if err != nil {
 		h.writeKnowledgeLifecycleError(w, r, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+func (h *Handlers) ActivateKnowledgeSnapshot(w http.ResponseWriter, r *http.Request) {
+	key, ok := requireIdempotencyKey(w, r)
+	if !ok {
+		return
+	}
+	acknowledge, ok := readUnvalidatedAcknowledgement(w, r)
+	if !ok {
+		return
+	}
+	result, err := h.service.ActivateKnowledgeSnapshot(r.Context(), h.lifecycleActorID(r), r.PathValue("snapshot_id"), key, acknowledge)
+	if err != nil {
+		h.writeKnowledgeLifecycleError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (h *Handlers) PublishKnowledgeRevision(w http.ResponseWriter, r *http.Request) {
+	key, ok := requireIdempotencyKey(w, r)
+	if !ok {
+		return
+	}
+	acknowledge, ok := readUnvalidatedAcknowledgement(w, r)
+	if !ok {
+		return
+	}
+	result, err := h.service.PublishKnowledgeRevision(r.Context(), h.lifecycleActorID(r), r.PathValue("revision_id"), key, acknowledge)
+	if err != nil {
+		h.writeKnowledgeLifecycleError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+func readUnvalidatedAcknowledgement(w http.ResponseWriter, r *http.Request) (bool, bool) {
+	if r.Body == nil {
+		return false, true
+	}
+	var payload struct {
+		AcknowledgeUnvalidated bool `json:"acknowledge_unvalidated"`
+	}
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&payload); err != nil {
+		if err.Error() == "EOF" {
+			return false, true
+		}
+		writeValidationError(w, r, "invalid_json", "request body must be valid JSON")
+		return false, false
+	}
+	return payload.AcknowledgeUnvalidated, true
+}
+
+func retirementBlockerMessage(err error) string {
+	message := err.Error()
+	if parts := strings.SplitN(message, ": ", 2); len(parts) == 2 && strings.TrimSpace(parts[1]) != "" {
+		return parts[1]
+	}
+	return message
 }
 
 func (h *Handlers) DisableKnowledgeDocument(w http.ResponseWriter, r *http.Request) {
@@ -1252,7 +1357,20 @@ func (h *Handlers) writeKnowledgeLifecycleError(w http.ResponseWriter, r *http.R
 	case errors.Is(err, repository.ErrKnowledgeDocumentNotDisabled):
 		writeConflict(w, r, "document_not_disabled", "knowledge document must be disabled before delete")
 	case errors.Is(err, repository.ErrKnowledgeRetirementNotReady):
-		writeConflict(w, r, "retirement_not_ready", err.Error())
+		writeConflict(w, r, "retirement_not_ready", retirementBlockerMessage(err))
+	case errors.Is(err, repository.ErrUnvalidatedAcknowledgementRequired):
+		var acknowledgement repository.UnvalidatedAcknowledgementError
+		if errors.As(err, &acknowledgement) && acknowledgement.Message != "" {
+			writeConflict(w, r, "unvalidated_acknowledgement_required", acknowledgement.Message)
+			return
+		}
+		writeConflict(w, r, "unvalidated_acknowledgement_required", "直接发布需要确认尚未完成上线验收")
+	case errors.Is(err, repository.ErrKnowledgeSnapshotNotFound):
+		writeNotFound(w, r, "snapshot_not_found", "knowledge snapshot was not found")
+	case errors.Is(err, repository.ErrSnapshotNotPending):
+		writeConflict(w, r, "snapshot_not_pending", "only a pending publish snapshot can be activated")
+	case errors.Is(err, repository.ErrStalePendingSnapshot):
+		writeConflict(w, r, "stale_pending_snapshot", "待发布快照已过期，请重新准备发布")
 	case errors.Is(err, repository.ErrRevisionNotReady), errors.Is(err, repository.ErrRevisionManifestMismatch), errors.Is(err, repository.ErrRevisionNotEffective):
 		writeConflict(w, r, "revision_not_ready", "knowledge revision is not ready to publish")
 	case errors.Is(err, repository.ErrKnowledgeDocumentConflict), errors.Is(err, repository.ErrKnowledgeRevisionConflict):

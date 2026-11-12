@@ -136,18 +136,53 @@ func (s *Service) GetKnowledgeRetirementReadiness(ctx context.Context, documentI
 	return store.GetKnowledgeRetirementReadiness(ctx, documentID)
 }
 
-func (s *Service) PublishKnowledgeRevision(ctx context.Context, actorID, revisionID, idempotencyKey string) (domain.KnowledgeLifecycleMutation, error) {
+func (s *Service) PrepareKnowledgeRevisionPublish(ctx context.Context, actorID, revisionID, idempotencyKey string) (domain.KnowledgeLifecycleMutation, error) {
 	store, err := s.knowledgeLifecycleStore()
 	if err != nil {
 		return domain.KnowledgeLifecycleMutation{}, err
 	}
-	key := lifecycleMutationKey(actorID, repository.KnowledgeOperationPublishRevision(), idempotencyKey, revisionID)
+	key := lifecycleMutationKey(actorID, repository.KnowledgeOperationPreparePublish(), idempotencyKey, revisionID)
 	if replay, found, err := replayKnowledgeMutation(ctx, store, key); err != nil {
 		return domain.KnowledgeLifecycleMutation{}, err
 	} else if found {
 		return replay, nil
 	}
-	return store.PublishKnowledgeRevisionLifecycle(ctx, revisionID, key)
+	return store.PrepareKnowledgeRevisionPublish(ctx, revisionID, key)
+}
+
+func (s *Service) ActivateKnowledgeSnapshot(ctx context.Context, actorID, snapshotID, idempotencyKey string, acknowledgeUnvalidated bool) (domain.KnowledgeLifecycleMutation, error) {
+	store, err := s.knowledgeLifecycleStore()
+	if err != nil {
+		return domain.KnowledgeLifecycleMutation{}, err
+	}
+	key := lifecycleMutationKey(actorID, repository.KnowledgeOperationActivateSnapshot(), idempotencyKey, snapshotID, acknowledgementFlag(acknowledgeUnvalidated))
+	if replay, found, err := replayKnowledgeMutation(ctx, store, key); err != nil {
+		return domain.KnowledgeLifecycleMutation{}, err
+	} else if found {
+		return replay, nil
+	}
+	return store.ActivateKnowledgeSnapshot(ctx, snapshotID, key, acknowledgeUnvalidated)
+}
+
+func (s *Service) PublishKnowledgeRevision(ctx context.Context, actorID, revisionID, idempotencyKey string, acknowledgeUnvalidated bool) (domain.KnowledgeLifecycleMutation, error) {
+	store, err := s.knowledgeLifecycleStore()
+	if err != nil {
+		return domain.KnowledgeLifecycleMutation{}, err
+	}
+	key := lifecycleMutationKey(actorID, repository.KnowledgeOperationPublishRevision(), idempotencyKey, revisionID, acknowledgementFlag(acknowledgeUnvalidated))
+	if replay, found, err := replayKnowledgeMutation(ctx, store, key); err != nil {
+		return domain.KnowledgeLifecycleMutation{}, err
+	} else if found {
+		return replay, nil
+	}
+	return store.PublishKnowledgeRevisionLifecycle(ctx, revisionID, key, acknowledgeUnvalidated)
+}
+
+func acknowledgementFlag(acknowledgeUnvalidated bool) string {
+	if acknowledgeUnvalidated {
+		return "acknowledge_unvalidated"
+	}
+	return "no_acknowledgement"
 }
 
 func (s *Service) DisableKnowledgeDocument(ctx context.Context, actorID, documentID, idempotencyKey string) (domain.KnowledgeLifecycleMutation, error) {

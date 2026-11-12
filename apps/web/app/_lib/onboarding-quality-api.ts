@@ -8,7 +8,7 @@ export interface OnboardingCase {
   expected_revision_ids?: string[];
   expected_locator_hints?: string[];
   expected_answer_points?: string[];
-  review_status: "draft" | "reviewed";
+  review_status: "draft" | "draft_generated" | "reviewed";
   reviewed_by?: string;
   created_at: string;
   updated_at: string;
@@ -58,6 +58,8 @@ export function getOnboardingDataset(datasetID: string) { return requestJSON<{ d
 export function createOnboardingDataset(payload: { name: string; knowledge_snapshot_id: string }) { return onboardingRequest<{ dataset: OnboardingDataset }>("/api/admin/onboarding/datasets", payload); }
 export function createOnboardingCase(datasetID: string, payload: Omit<OnboardingCase, "case_id" | "dataset_id" | "created_at" | "updated_at" | "reviewed_by">) { return onboardingRequest<{ case: OnboardingCase }>(`/api/admin/onboarding/datasets/${encodeURIComponent(datasetID)}/cases`, payload); }
 export function freezeOnboardingDataset(datasetID: string) { return onboardingRequest<{ dataset: OnboardingDataset }>(`/api/admin/onboarding/datasets/${encodeURIComponent(datasetID)}/freeze`); }
+export function generateOnboardingDrafts(datasetID: string) { return onboardingRequest<{ cases: OnboardingCase[] }>(`/api/admin/onboarding/datasets/${encodeURIComponent(datasetID)}/drafts`); }
+export function reviewOnboardingCase(datasetID: string, caseID: string, payload: { question?: string; expected_revision_ids?: string[]; expected_locator_hints?: string[]; expected_answer_points?: string[] } = {}) { return onboardingRequest<{ case: OnboardingCase }>(`/api/admin/onboarding/datasets/${encodeURIComponent(datasetID)}/cases/${encodeURIComponent(caseID)}/review`, payload); }
 export function createOnboardingRun(datasetID: string) { return onboardingRequest<{ run: OnboardingRun }>(`/api/admin/onboarding/datasets/${encodeURIComponent(datasetID)}/runs`); }
 export function getOnboardingRun(runID: string) { return requestJSON<{ run: OnboardingRun }>(`/api/admin/onboarding/runs/${encodeURIComponent(runID)}`); }
 

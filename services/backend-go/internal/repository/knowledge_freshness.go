@@ -169,7 +169,8 @@ func (s *PostgresStore) ListKnowledgeUpdates(ctx context.Context, documentID, cu
 	}
 	query := `
 		SELECT event.event_id, event.event_type, event.document_id, event.revision_id, event.snapshot_id, event.actor_id,
-			event.correlation_id, event.occurred_at, scan.event_id, scan.status, scan.attempt_count,
+			event.correlation_id, event.occurred_at, event.acceptance_status, event.onboarding_run_id,
+			scan.event_id, scan.status, scan.attempt_count,
 			scan.candidate_count, scan.marked_count, scan.last_error, scan.updated_at, scan.completed_at
 		FROM knowledge_update_events event
 		LEFT JOIN knowledge_freshness_scans scan ON scan.event_id = event.event_id
@@ -197,6 +198,9 @@ func (s *PostgresStore) ListKnowledgeUpdates(ctx context.Context, documentID, cu
 		page.NextCursor = page.Items[limit-1].EventID
 		page.Items = page.Items[:limit]
 	}
+	if err := s.attachPublishedAcceptance(ctx, page.Items); err != nil {
+		return domain.KnowledgeUpdatePage{}, err
+	}
 	return page, nil
 }
 
@@ -214,6 +218,9 @@ func (s *PostgresStore) GetKnowledgeSnapshot(ctx context.Context, snapshotID str
 		return domain.KnowledgeSnapshot{}, false, err
 	}
 	if err := tx.Commit(); err != nil {
+		return domain.KnowledgeSnapshot{}, false, err
+	}
+	if err := s.attachSnapshotAcceptance(ctx, &snapshot); err != nil {
 		return domain.KnowledgeSnapshot{}, false, err
 	}
 	return snapshot, true, nil
@@ -491,16 +498,19 @@ func knowledgeUpdateEventTx(ctx context.Context, tx *sql.Tx, eventID string) (do
 
 func scanKnowledgeUpdateCalendarItem(row scanner) (domain.KnowledgeUpdateCalendarItem, error) {
 	var item domain.KnowledgeUpdateCalendarItem
-	var documentID, revisionID, snapshotID, actorID sql.NullString
+	var documentID, revisionID, snapshotID, actorID, acceptanceStatus, onboardingRunID sql.NullString
 	var occurredAt time.Time
 	var scanEventID, scanStatus, scanLastError sql.NullString
 	var scanAttempt, scanCandidates, scanMarked sql.NullInt64
 	var scanUpdated, scanCompleted sql.NullTime
 	if err := row.Scan(&item.EventID, &item.EventType, &documentID, &revisionID, &snapshotID, &actorID, &item.CorrelationID, &occurredAt,
+		&acceptanceStatus, &onboardingRunID,
 		&scanEventID, &scanStatus, &scanAttempt, &scanCandidates, &scanMarked, &scanLastError, &scanUpdated, &scanCompleted); err != nil {
 		return domain.KnowledgeUpdateCalendarItem{}, err
 	}
 	item.DocumentID, item.RevisionID, item.SnapshotID, item.ActorID = nullableString(documentID), nullableString(revisionID), nullableString(snapshotID), nullableString(actorID)
+	item.AcceptanceStatus = nullableString(acceptanceStatus)
+	item.OnboardingRunID = nullableString(onboardingRunID)
 	item.OccurredAt = occurredAt.UTC().Format(time.RFC3339)
 	if scanEventID.Valid {
 		scan := domain.KnowledgeFreshnessScan{EventID: scanEventID.String, Status: scanStatus.String, AttemptCount: int(scanAttempt.Int64), CandidateCount: int(scanCandidates.Int64), MarkedCount: int(scanMarked.Int64), LastError: nullableString(scanLastError)}

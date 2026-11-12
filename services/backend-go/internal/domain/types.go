@@ -405,17 +405,59 @@ type KnowledgeSnapshot struct {
 	CreatedAt        string                    `json:"created_at"`
 	PublishedAt      *string                   `json:"published_at,omitempty"`
 	Members          []KnowledgeSnapshotMember `json:"members,omitempty"`
+	Acceptance       *KnowledgeAcceptance      `json:"acceptance,omitempty"`
+}
+
+// KnowledgeAcceptance is derived from onboarding runs for one snapshot.
+// Status is accepted when any passing run exists; otherwise the latest
+// complete run decides failed vs unvalidated. DisplayLabel is the only
+// user-facing wording for that fact.
+type KnowledgeAcceptance struct {
+	Status                             string `json:"status"`
+	DisplayLabel                       string `json:"display_label"`
+	OnboardingRunID                    string `json:"onboarding_run_id,omitempty"`
+	RequiresUnvalidatedAcknowledgement bool   `json:"requires_unvalidated_acknowledgement"`
+}
+
+// AcceptanceDisplayLabel returns the server-owned wording for a snapshot.
+// Published and retired snapshots use the three post-publish labels.
+// A pending_publish snapshot uses the shorter pre-publish wording.
+func AcceptanceDisplayLabel(snapshotStatus, acceptanceStatus string) string {
+	pending := snapshotStatus == "pending_publish"
+	switch acceptanceStatus {
+	case "accepted":
+		if pending {
+			return "通过"
+		}
+		return "已发布 · 已验收"
+	case "failed":
+		if pending {
+			return "未通过"
+		}
+		return "已发布 · 验收未通过（仍在服务）"
+	default:
+		if pending {
+			return "未跑"
+		}
+		if snapshotStatus == "published" || snapshotStatus == "retired" {
+			return "已发布 · 未验收"
+		}
+		return ""
+	}
 }
 
 type KnowledgeUpdateEvent struct {
-	EventID       string `json:"event_id"`
-	EventType     string `json:"event_type"`
-	DocumentID    string `json:"document_id,omitempty"`
-	RevisionID    string `json:"revision_id,omitempty"`
-	SnapshotID    string `json:"snapshot_id,omitempty"`
-	ActorID       string `json:"actor_id,omitempty"`
-	CorrelationID string `json:"correlation_id,omitempty"`
-	OccurredAt    string `json:"occurred_at"`
+	EventID          string               `json:"event_id"`
+	EventType        string               `json:"event_type"`
+	DocumentID       string               `json:"document_id,omitempty"`
+	RevisionID       string               `json:"revision_id,omitempty"`
+	SnapshotID       string               `json:"snapshot_id,omitempty"`
+	ActorID          string               `json:"actor_id,omitempty"`
+	CorrelationID    string               `json:"correlation_id,omitempty"`
+	OccurredAt       string               `json:"occurred_at"`
+	AcceptanceStatus string               `json:"acceptance_status,omitempty"`
+	OnboardingRunID  string               `json:"onboarding_run_id,omitempty"`
+	Acceptance       *KnowledgeAcceptance `json:"acceptance,omitempty"`
 }
 
 type KnowledgeOutboxMessage struct {
@@ -450,25 +492,31 @@ type RevisionDeliverySummary struct {
 }
 
 type KnowledgeSnapshotSummary struct {
-	SnapshotID     string `json:"snapshot_id"`
-	Status         string `json:"status"`
-	ManifestSHA256 string `json:"manifest_sha256"`
-	CreatedAt      string `json:"created_at"`
-	PublishedAt    string `json:"published_at,omitempty"`
+	SnapshotID     string                    `json:"snapshot_id"`
+	Status         string                    `json:"status"`
+	ManifestSHA256 string                    `json:"manifest_sha256"`
+	CreatedAt      string                    `json:"created_at"`
+	PublishedAt    string                    `json:"published_at,omitempty"`
+	Members        []KnowledgeSnapshotMember `json:"members,omitempty"`
+	Acceptance     *KnowledgeAcceptance      `json:"acceptance,omitempty"`
 }
 
 type KnowledgeUpdateEventSummary struct {
-	EventID    string `json:"event_id"`
-	EventType  string `json:"event_type"`
-	DocumentID string `json:"document_id"`
-	RevisionID string `json:"revision_id,omitempty"`
-	SnapshotID string `json:"snapshot_id,omitempty"`
-	CreatedAt  string `json:"created_at"`
+	EventID          string `json:"event_id"`
+	EventType        string `json:"event_type"`
+	DocumentID       string `json:"document_id"`
+	RevisionID       string `json:"revision_id,omitempty"`
+	SnapshotID       string `json:"snapshot_id,omitempty"`
+	CreatedAt        string `json:"created_at"`
+	AcceptanceStatus string `json:"acceptance_status,omitempty"`
+	OnboardingRunID  string `json:"onboarding_run_id,omitempty"`
 }
 
 type KnowledgeDocumentListItem struct {
 	KnowledgeDocument
-	CurrentRevision *KnowledgeRevision `json:"current_revision,omitempty"`
+	CurrentRevision *KnowledgeRevision   `json:"current_revision,omitempty"`
+	Acceptance      *KnowledgeAcceptance `json:"acceptance,omitempty"`
+	PendingSnapshot *KnowledgeSnapshot   `json:"pending_snapshot,omitempty"`
 }
 
 type KnowledgeDocumentPage struct {
@@ -487,6 +535,8 @@ type KnowledgeDocumentDetail struct {
 	Document         KnowledgeDocument         `json:"document"`
 	Revisions        []KnowledgeRevisionDetail `json:"revisions"`
 	ActiveSnapshotID string                    `json:"active_snapshot_id,omitempty"`
+	Acceptance       *KnowledgeAcceptance      `json:"acceptance,omitempty"`
+	PendingSnapshot  *KnowledgeSnapshot        `json:"pending_snapshot,omitempty"`
 }
 
 // KnowledgeRetirementReadiness is the authoritative, current-snapshot proof

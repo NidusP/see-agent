@@ -56,15 +56,18 @@ import {
   type QualityRelease,
 } from "../_lib/quality-api";
 import {
+  activateKnowledgeSnapshot,
   createIdempotencyKey,
   formatDateTime as formatKnowledgeDateTime,
   getKnowledgeDocument,
   listKnowledgeDocuments,
-  publishKnowledgeRevision,
+  prepareKnowledgePublish,
   type KnowledgeDocumentDetailResponse,
   type KnowledgeDocumentListItem,
   type KnowledgeRevision,
+  type KnowledgeSnapshotSummary,
 } from "../_lib/knowledge-api";
+import { PrepublishPanel } from "./prepublish-panel";
 import { Button } from "./ui/button";
 import {
   AlertDialog,
@@ -726,6 +729,7 @@ function KnowledgePublishApproval() {
   const [selectedDetail, setSelectedDetail] = useState<KnowledgeDocumentDetailResponse>();
   const [loading, setLoading] = useState(true);
   const [actionRevisionID, setActionRevisionID] = useState<string>();
+  const [preparedSnapshots, setPreparedSnapshots] = useState<Record<string, KnowledgeSnapshotSummary>>({});
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
 
@@ -765,17 +769,39 @@ function KnowledgePublishApproval() {
     }
   }, []);
 
-  const publish = useCallback(
-    async (revision: KnowledgeRevision, document: KnowledgeDocumentListItem) => {
-      if (!window.confirm("确认发布 " + revision.filename + "（" + revision.revision_id + "）吗？")) {
-        return;
-      }
+  const prepare = useCallback(
+    async (revision: KnowledgeRevision) => {
       setActionRevisionID(revision.revision_id);
       setError(undefined);
       setNotice(undefined);
       try {
-        const response = await publishKnowledgeRevision(revision.revision_id, createIdempotencyKey());
-        setNotice(response.snapshot ? "已发布到新知识快照 " + response.snapshot.snapshot_id + "。" : "已完成知识发布。");
+        const response = await prepareKnowledgePublish(revision.revision_id, createIdempotencyKey());
+        if (response.snapshot) {
+          setPreparedSnapshots((current) => ({ ...current, [revision.revision_id]: response.snapshot! }));
+          setNotice(response.snapshot.acceptance?.display_label ?? "已准备待发布快照，当前问答未切换。");
+        }
+      } catch (reason) {
+        setError(readError(reason));
+      } finally {
+        setActionRevisionID(undefined);
+      }
+    },
+    [],
+  );
+
+  const activate = useCallback(
+    async (revision: KnowledgeRevision, document: KnowledgeDocumentListItem, snapshot: KnowledgeSnapshotSummary, acknowledgeUnvalidated: boolean) => {
+      setActionRevisionID(revision.revision_id);
+      setError(undefined);
+      setNotice(undefined);
+      try {
+        const response = await activateKnowledgeSnapshot(snapshot.snapshot_id, createIdempotencyKey(), acknowledgeUnvalidated);
+        setNotice(response.snapshot?.acceptance?.display_label ?? "已完成知识发布。");
+        setPreparedSnapshots((current) => {
+          const next = { ...current };
+          delete next[revision.revision_id];
+          return next;
+        });
         await Promise.all([refresh(), inspectRevision(document.document_id)]);
       } catch (reason) {
         setError(readError(reason));
@@ -797,7 +823,7 @@ function KnowledgePublishApproval() {
           {loading ? "刷新中" : "刷新"}
         </Button>
       </div>
-      <p className="muted-copy">知识库管理员上传并完成索引后，revision 会出现在这里。确认发布会创建新的不可变知识快照，只有之后的新会话使用它。</p>
+      <p className="muted-copy">知识库管理员上传并完成索引后，revision 会出现在这里。准备发布只生成待发布快照，不切换线上问答。上线验收是推荐项；未跑或未通过时仍可在确认后直接发布。停用和删除仍要求相应通过验收。配置、模型和检索策略发布仍走质量实验，不在这里处理。</p>
       {error ? <p className="inline-error" role="alert">{error}</p> : null}
       {notice ? <p className="success-copy" role="status">{notice}</p> : null}
       {loading ? <p className="loading-copy">发布队列加载中...</p> : null}
@@ -822,13 +848,24 @@ function KnowledgePublishApproval() {
                 <Button
                   type="button"
                   size="sm"
-                  data-testid={"publish-revision-" + revision.revision_id}
-                  onClick={() => void publish(revision, document)}
+                  data-testid={"prepare-publish-" + revision.revision_id}
+                  onClick={() => void prepare(revision)}
                   disabled={actionRevisionID !== undefined}
                 >
-                  {actionRevisionID === revision.revision_id ? "发布中" : "确认发布"}
+                  {actionRevisionID === revision.revision_id ? "准备中" : "准备发布"}
                 </Button>
               </div>
+              {preparedSnapshots[revision.revision_id] || document.pending_snapshot ? (
+                <PrepublishPanel
+                  mode="publish"
+                  snapshot={(preparedSnapshots[revision.revision_id] ?? document.pending_snapshot)!}
+                  onActivate={(acknowledgeUnvalidated) => {
+                    const snapshot = preparedSnapshots[revision.revision_id] ?? document.pending_snapshot;
+                    return snapshot ? activate(revision, document, snapshot, acknowledgeUnvalidated) : Promise.resolve();
+                  }}
+                  onReload={() => prepare(revision)}
+                />
+              ) : null}
             </article>
           ))}
         </div>

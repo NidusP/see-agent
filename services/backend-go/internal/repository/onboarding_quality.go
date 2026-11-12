@@ -12,6 +12,10 @@ import (
 	"see-agent/services/backend-go/internal/domain"
 )
 
+func onboardingSnapshotAllowed(status string) bool {
+	return status == "published" || status == "pending_publish"
+}
+
 const onboardingDatasetSelect = `SELECT dataset_id,name,status,knowledge_snapshot_id,knowledge_snapshot_manifest_hash,cases_sha256,created_by,created_at,frozen_at FROM onboarding_datasets`
 const onboardingCaseSelect = `SELECT case_id,dataset_id,case_type,question,expected_revision_ids,expected_locator_hints,expected_answer_points,review_status,reviewed_by,created_at,updated_at FROM onboarding_cases`
 const onboardingRunSelect = `SELECT run_id,dataset_id,status,knowledge_snapshot_id,knowledge_snapshot_manifest_hash,config_version,retrieval_config_version,cases_sha256,metrics,error_code,error_message,created_at,started_at,completed_at FROM onboarding_runs`
@@ -53,8 +57,8 @@ func (s *PostgresStore) CreateOnboardingDataset(ctx context.Context, actor, key,
 	if err != nil {
 		return domain.OnboardingDataset{}, err
 	}
-	if snapshot.Status != "published" {
-		return domain.OnboardingDataset{}, fmt.Errorf("%w: snapshot is not published", ErrQualityConflict)
+	if !onboardingSnapshotAllowed(snapshot.Status) {
+		return domain.OnboardingDataset{}, fmt.Errorf("%w: snapshot cannot accept onboarding", ErrQualityConflict)
 	}
 	n, err := nextCounterTx(ctx, tx, "onboarding_dataset")
 	if err != nil {
@@ -272,8 +276,8 @@ func (s *PostgresStore) CreateOnboardingRun(ctx context.Context, actor, id, key 
 	if err != nil {
 		return domain.OnboardingRun{}, err
 	}
-	if snapshot.Status != "published" || snapshot.ManifestSHA256 != dataset.KnowledgeSnapshotManifestHash {
-		return domain.OnboardingRun{}, fmt.Errorf("%w: snapshot identity is no longer publishable", ErrQualityConflict)
+	if !onboardingSnapshotAllowed(snapshot.Status) || snapshot.ManifestSHA256 != dataset.KnowledgeSnapshotManifestHash {
+		return domain.OnboardingRun{}, fmt.Errorf("%w: snapshot is not available for onboarding", ErrQualityConflict)
 	}
 	var configVersion, retrievalVersion string
 	err = tx.QueryRowContext(ctx, `SELECT release.config_version,release.retrieval_config_version FROM quality_active_release pointer JOIN quality_releases release ON release.release_id=pointer.release_id WHERE pointer.singleton=TRUE FOR SHARE`).Scan(&configVersion, &retrievalVersion)

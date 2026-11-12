@@ -47,12 +47,21 @@ export interface RevisionDeliverySummary {
   updated_at: string;
 }
 
+export interface KnowledgeAcceptance {
+  status: "accepted" | "unvalidated" | "failed";
+  display_label: string;
+  onboarding_run_id?: string;
+  requires_unvalidated_acknowledgement: boolean;
+}
+
 export interface KnowledgeSnapshotSummary {
   snapshot_id: string;
-  status: "building" | "published" | "retired";
+  status: "building" | "pending_publish" | "published" | "retired";
   manifest_sha256: string;
   created_at: string;
   published_at?: string;
+  members?: KnowledgeSnapshotMember[];
+  acceptance?: KnowledgeAcceptance;
 }
 
 export interface KnowledgeUpdateEventSummary {
@@ -62,6 +71,8 @@ export interface KnowledgeUpdateEventSummary {
   revision_id?: string;
   snapshot_id?: string;
   created_at: string;
+  acceptance_status?: "accepted" | "unvalidated" | "failed";
+  onboarding_run_id?: string;
 }
 
 export type KnowledgeUpdateEventType =
@@ -94,6 +105,9 @@ export interface KnowledgeUpdateEvent {
   actor_id?: string;
   correlation_id?: string;
   occurred_at: string;
+  acceptance_status?: "accepted" | "unvalidated" | "failed";
+  onboarding_run_id?: string;
+  acceptance?: KnowledgeAcceptance;
   freshness_scan?: KnowledgeFreshnessScan;
 }
 
@@ -120,6 +134,8 @@ export interface KnowledgeSnapshotDetailResponse {
 
 export interface KnowledgeDocumentListItem extends KnowledgeDocument {
   current_revision?: KnowledgeRevision;
+  acceptance?: KnowledgeAcceptance;
+  pending_snapshot?: KnowledgeSnapshot;
 }
 
 export interface KnowledgeDocumentListResponse {
@@ -138,6 +154,8 @@ export interface KnowledgeDocumentDetailResponse {
   document: KnowledgeDocument;
   revisions: KnowledgeDocumentRevision[];
   active_snapshot_id?: string;
+  acceptance?: KnowledgeAcceptance;
+  pending_snapshot?: KnowledgeSnapshot;
 }
 
 export interface KnowledgeRevisionUploadResponse {
@@ -248,10 +266,26 @@ export async function uploadKnowledgeRevision(input: {
   });
 }
 
-export async function publishKnowledgeRevision(revisionId: string, idempotencyKey: string) {
-  return requestJSON<KnowledgeLifecycleMutationResponse>(`/api/kb/revisions/${encodeURIComponent(revisionId)}/publish`, {
+export async function prepareKnowledgePublish(revisionId: string, idempotencyKey: string) {
+  return requestJSON<KnowledgeLifecycleMutationResponse>(`/api/kb/revisions/${encodeURIComponent(revisionId)}/prepare-publish`, {
     method: "POST",
     headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function activateKnowledgeSnapshot(snapshotId: string, idempotencyKey: string, acknowledgeUnvalidated: boolean) {
+  return requestJSON<KnowledgeLifecycleMutationResponse>(`/api/kb/snapshots/${encodeURIComponent(snapshotId)}/activate`, {
+    method: "POST",
+    headers: { ...idempotencyHeaders(idempotencyKey), "Content-Type": "application/json" },
+    body: JSON.stringify({ acknowledge_unvalidated: acknowledgeUnvalidated }),
+  });
+}
+
+export async function publishKnowledgeRevision(revisionId: string, idempotencyKey: string, acknowledgeUnvalidated = false) {
+  return requestJSON<KnowledgeLifecycleMutationResponse>(`/api/kb/revisions/${encodeURIComponent(revisionId)}/publish`, {
+    method: "POST",
+    headers: { ...idempotencyHeaders(idempotencyKey), "Content-Type": "application/json" },
+    body: JSON.stringify({ acknowledge_unvalidated: acknowledgeUnvalidated }),
   });
 }
 
@@ -396,7 +430,13 @@ function localizeApiError(code: string | undefined, message: string | undefined,
     case "document_has_inflight_revision":
       return "该文档仍有 revision 正在上传或索引，完成前不能停用。";
     case "retirement_not_ready":
-      return "旧知识尚不满足退役条件：请先确认新知识已发布，并在当前快照完成通过的验收。";
+      return message ?? "旧知识尚不满足退役条件：请先确认新知识已发布，并在当前快照完成通过的验收。";
+    case "unvalidated_acknowledgement_required":
+      return message ?? "直接发布需要确认尚未完成上线验收。";
+    case "draft_generation_failed":
+      return message ?? "无法根据当前知识起草可核验题目，请手工添加题目；这不影响直接发布。";
+    case "stale_pending_snapshot":
+      return message ?? "待发布快照已过期，请重新准备发布。";
     default:
       return message ?? `请求失败，状态码 ${status}`;
   }
