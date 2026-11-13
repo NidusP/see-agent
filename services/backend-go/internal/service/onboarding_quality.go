@@ -52,7 +52,7 @@ func (s *Service) runOnboardingQuality(ctx context.Context, store repository.Onb
 		return
 	}
 	snapshot, found, err := snapshotStore.GetKnowledgeSnapshot(ctx, run.KnowledgeSnapshotID)
-	if err != nil || !found || snapshot.Status != "published" || snapshot.ManifestSHA256 != run.KnowledgeSnapshotManifestHash || len(snapshot.Members) == 0 {
+	if err != nil || !found || (snapshot.Status != "published" && snapshot.Status != "pending_publish") || snapshot.ManifestSHA256 != run.KnowledgeSnapshotManifestHash || len(snapshot.Members) == 0 {
 		fail("knowledge_snapshot_unavailable", "the frozen knowledge snapshot is unavailable")
 		return
 	}

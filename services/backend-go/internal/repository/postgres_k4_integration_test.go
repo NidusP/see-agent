@@ -45,7 +45,7 @@ func TestPostgresKnowledgeLifecycleRejectsDisableWithInflightRevision(t *testing
 	if err != nil {
 		t.Fatalf("list migrations: %v", err)
 	}
-	if got, want := strings.Join(versions, ","), "001,002,003,004,005,006,007,008,009,010,011,012,013,014,015,016,017,018,019,020,021,022,023,024"; got != want {
+	if got, want := strings.Join(versions, ","), "001,002,003,004,005,006,007,008,009,010,011,012,013,014,015,016,017,018,019,020,021,022,023,024,025,026"; got != want {
 		t.Fatalf("migration versions = %q, want %q", got, want)
 	}
 
@@ -74,7 +74,7 @@ func TestPostgresKnowledgeLifecycleRejectsDisableWithInflightRevision(t *testing
 	if _, err := store.MarkKnowledgeRevisionReady(ctx, initial.Revision.RevisionID, "sha256:initial-chunks", "bge-m3"); err != nil {
 		t.Fatalf("mark initial ready: %v", err)
 	}
-	published, err := store.PublishKnowledgeRevisionLifecycle(ctx, initial.Revision.RevisionID, k4Mutation("publish-initial", initial.Revision.RevisionID))
+	published, err := store.PublishKnowledgeRevisionLifecycle(ctx, initial.Revision.RevisionID, k4Mutation("publish-initial", initial.Revision.RevisionID), true)
 	if err != nil || published.Snapshot == nil {
 		t.Fatalf("publish initial = %#v err=%v", published, err)
 	}
@@ -105,7 +105,7 @@ func TestPostgresKnowledgeLifecycleRejectsDisableWithInflightRevision(t *testing
 	if _, err := store.MarkKnowledgeRevisionReady(ctx, replacement.Revision.RevisionID, "sha256:replacement-chunks", "bge-m3"); err != nil {
 		t.Fatalf("mark replacement ready: %v", err)
 	}
-	if _, err := store.PublishKnowledgeRevisionLifecycle(ctx, replacement.Revision.RevisionID, k4Mutation("publish-replacement", replacement.Revision.RevisionID)); err != nil {
+	if _, err := store.PublishKnowledgeRevisionLifecycle(ctx, replacement.Revision.RevisionID, k4Mutation("publish-replacement", replacement.Revision.RevisionID), true); err != nil {
 		t.Fatalf("publish replacement: %v", err)
 	}
 	disabled, err := store.DisableKnowledgeDocument(ctx, "doc_k4_policy", k4Mutation("disable-ready", "doc_k4_policy"))

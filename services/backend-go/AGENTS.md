@@ -28,6 +28,7 @@
 - `K4-K6` 已验证管理员 document/revision lifecycle、每消息 snapshot/citation provenance，以及 Postgres update calendar、possibly-stale scan 和独立历史核验。K6 仅在 Postgres 路径启用，worker 可从 lease/retry 恢复；核验 result 不会覆盖原 assistant message。
 - `C1` 已验证 answer-level citation anchors：service 会拒绝越界、重叠或引用不存在 rank 的 Runtime anchors；Postgres `006` 与 message/citation 同事务持久化，legacy message 保持无 anchor 兼容。
 - `K7` 已追加 Postgres `007/008`：assistant message、K5 provenance、citations、C1 anchors 与 execution evidence 同事务写入；管理员可查询 execution/delivery/eval evidence，eval report 按语义内容幂等登记且冲突可诊断。
+- `K8-R4b` 已追加 Postgres `026`：snapshot 增加 `pending_publish`。准备发布不切换 active pointer；激活或兼容 `publish` 在没有通过验收时必须带未验收确认。普通问答仍只检索状态为 `published` 且被 pointer 指向的快照。停用/删除仍要求 passing onboarding run。
 - `K9-S0` 已追加 Postgres `010`：conversation `owner_id` 是 chat 授权权威；外部 list/detail/message/source/revalidation 必须使用 session subject 的 owner-filtered path，admin chat 不 bypass，legacy conversation 属于 `user_admin`。
 - `U7` 已追加 Postgres `017`：conversation 内部 `title_source` 区分默认、首问、手动与 legacy；空标题创建为“新对话”，首个成功持久化 exchange 在同一 transaction 内确定性命名，手动重命名仅走 owner-filtered `PATCH /api/chat/conversations/{conversation_id}`。该内部来源不进入产品 JSON，历史标题不回填。
 - `Q1` 已追加 Postgres `012`：answer feedback、quality experiment/report binding、immutable quality release 与 active release pointer 均由 Backend/Postgres 权威控制；候选 config 不得因创建时间自动影响新 conversation，只有通过 gate 的 approved experiment 才能 publish，rollback 以新 release 前滚。

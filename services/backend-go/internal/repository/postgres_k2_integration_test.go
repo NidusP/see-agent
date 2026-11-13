@@ -54,7 +54,7 @@ func TestPostgresKnowledgeEvolution(t *testing.T) {
 	if err != nil {
 		t.Fatalf("list migrations: %v", err)
 	}
-	if got, want := strings.Join(versions, ","), "001,002,003,004,005,006,007,008,009,010,011,012,013,014,015,016,017,018,019,020,021,022,023,024"; got != want {
+	if got, want := strings.Join(versions, ","), "001,002,003,004,005,006,007,008,009,010,011,012,013,014,015,016,017,018,019,020,021,022,023,024,025,026"; got != want {
 		t.Fatalf("migration versions = %q, want %q", got, want)
 	}
 	legacy, ok, err := store.GetLegacyKnowledgeRevision(ctx, "file_001")

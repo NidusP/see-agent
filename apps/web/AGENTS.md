@@ -47,6 +47,7 @@
 - `Q1` 已在 `/config` 接入管理员 answer feedback、候选 experiment、报告对照、审批发布和 forward rollback；候选与发布状态由 Backend 决定，前端明确提示候选不影响线上、发布只影响后续新会话
 - `K9-S0` 已要求 `Conversation.owner_id`；Web 不参与授权，直达不存在或无权访问的会话时跳到当前账号可访问会话并保留统一提示
 - `K4-K6` 已接 document/revision lifecycle、回答 provenance、知识更新日历、snapshot 成员详情与独立历史核验 UI；核验 result 不会覆盖原回答正文
+- `K8-R4b` 已用准备发布面板替换知识发布的浏览器 `confirm`。系统管理员可在验收通过后直接发布已验收知识；未跑或未通过时必须勾选未验收确认。页面只展示服务端返回的已验收、未验收或验收未通过状态。知识库管理员看到等待系统管理员发布，并可在待发布快照上审核题目。
 - `C1/U3` 已接回答内 citation anchor：Web 只按 Backend 持久化 rune range 渲染下划线，hover/focus 懒加载来源，点击打开可关闭的来源详情抽屉；无 anchor 的旧消息保留消息级来源入口
 - `C2/C2-R1` 已区分知识回答与有限普通交流、明确的公共开放世界拒答：非知识回复不显示 snapshot、revalidation、citation 或额外知识状态标签；相关或混合问题仍按既有引用路径展示；首个 pending 文案保持中性。
 - 同源 API proxy 会转发浏览器 cookie，Backend 是权限判断最终来源

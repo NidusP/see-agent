@@ -22,18 +22,22 @@ var (
 )
 
 const (
-	knowledgeOperationCreateDocument  = "knowledge_document_create"
-	knowledgeOperationCreateRevision  = "knowledge_revision_create"
-	knowledgeOperationPublishRevision = "knowledge_revision_publish"
-	knowledgeOperationDisableDocument = "knowledge_document_disable"
-	knowledgeOperationDeleteDocument  = "knowledge_document_delete"
+	knowledgeOperationCreateDocument   = "knowledge_document_create"
+	knowledgeOperationCreateRevision   = "knowledge_revision_create"
+	knowledgeOperationPublishRevision  = "knowledge_revision_publish"
+	knowledgeOperationPreparePublish   = "knowledge_revision_prepare_publish"
+	knowledgeOperationActivateSnapshot = "knowledge_snapshot_activate"
+	knowledgeOperationDisableDocument  = "knowledge_document_disable"
+	knowledgeOperationDeleteDocument   = "knowledge_document_delete"
 )
 
-func KnowledgeOperationCreateDocument() string  { return knowledgeOperationCreateDocument }
-func KnowledgeOperationCreateRevision() string  { return knowledgeOperationCreateRevision }
-func KnowledgeOperationPublishRevision() string { return knowledgeOperationPublishRevision }
-func KnowledgeOperationDisableDocument() string { return knowledgeOperationDisableDocument }
-func KnowledgeOperationDeleteDocument() string  { return knowledgeOperationDeleteDocument }
+func KnowledgeOperationCreateDocument() string   { return knowledgeOperationCreateDocument }
+func KnowledgeOperationCreateRevision() string   { return knowledgeOperationCreateRevision }
+func KnowledgeOperationPublishRevision() string  { return knowledgeOperationPublishRevision }
+func KnowledgeOperationPreparePublish() string   { return knowledgeOperationPreparePublish }
+func KnowledgeOperationActivateSnapshot() string { return knowledgeOperationActivateSnapshot }
+func KnowledgeOperationDisableDocument() string  { return knowledgeOperationDisableDocument }
+func KnowledgeOperationDeleteDocument() string   { return knowledgeOperationDeleteDocument }
 
 func (s *PostgresStore) GetKnowledgeMutation(ctx context.Context, key domain.KnowledgeMutationKey) (json.RawMessage, bool, error) {
 	if err := validateKnowledgeMutationKey(key); err != nil {
@@ -254,6 +258,9 @@ func (s *PostgresStore) ListKnowledgeDocuments(ctx context.Context, status, curs
 	if err := s.db.QueryRowContext(ctx, countQuery, countArgs...).Scan(&page.Total); err != nil {
 		return domain.KnowledgeDocumentPage{}, err
 	}
+	if err := s.attachDocumentPublicationState(ctx, page.Items); err != nil {
+		return domain.KnowledgeDocumentPage{}, err
+	}
 	return page, nil
 }
 
@@ -291,7 +298,26 @@ func (s *PostgresStore) GetKnowledgeDocument(ctx context.Context, documentID str
 		}
 		detail.Revisions = append(detail.Revisions, entry)
 	}
-	return detail, rows.Err()
+	if err := rows.Err(); err != nil {
+		return domain.KnowledgeDocumentDetail{}, err
+	}
+	if hasActive {
+		if err := s.attachSnapshotAcceptance(ctx, &active); err != nil {
+			return domain.KnowledgeDocumentDetail{}, err
+		}
+		for _, member := range active.Members {
+			if member.DocumentID == document.DocumentID {
+				detail.Acceptance = active.Acceptance
+				break
+			}
+		}
+	}
+	pending, err := s.pendingSnapshotForDocument(ctx, document.DocumentID)
+	if err != nil {
+		return domain.KnowledgeDocumentDetail{}, err
+	}
+	detail.PendingSnapshot = pending
+	return detail, nil
 }
 
 func (s *PostgresStore) GetKnowledgeRetirementReadiness(ctx context.Context, documentID string) (domain.KnowledgeRetirementReadiness, error) {
@@ -383,49 +409,8 @@ func retirementReadinessTx(ctx context.Context, tx *sql.Tx, document domain.Know
 	return result, nil
 }
 
-func (s *PostgresStore) PublishKnowledgeRevisionLifecycle(ctx context.Context, revisionID string, key domain.KnowledgeMutationKey) (domain.KnowledgeLifecycleMutation, error) {
-	if err := validateKnowledgeMutationKey(key); err != nil {
-		return domain.KnowledgeLifecycleMutation{}, err
-	}
-	if raw, found, err := s.GetKnowledgeMutation(ctx, key); err != nil {
-		return domain.KnowledgeLifecycleMutation{}, err
-	} else if found {
-		var replay domain.KnowledgeLifecycleMutation
-		if err := json.Unmarshal(raw, &replay); err != nil {
-			return domain.KnowledgeLifecycleMutation{}, fmt.Errorf("decode idempotent publish response: %w", err)
-		}
-		return replay, nil
-	}
-	snapshot, err := s.PublishKnowledgeRevision(ctx, revisionID, key.ActorID, key.Key)
-	if err != nil {
-		return domain.KnowledgeLifecycleMutation{}, err
-	}
-	revision, err := s.getKnowledgeRevision(ctx, revisionID)
-	if err != nil {
-		return domain.KnowledgeLifecycleMutation{}, err
-	}
-	document, found, err := s.knowledgeDocument(ctx, revision.DocumentID)
-	if err != nil || !found {
-		return domain.KnowledgeLifecycleMutation{}, fmt.Errorf("published document lookup: %w", err)
-	}
-	event, err := s.latestKnowledgeEvent(ctx, key.Key)
-	if err != nil {
-		return domain.KnowledgeLifecycleMutation{}, err
-	}
-	result := domain.KnowledgeLifecycleMutation{Document: document, Snapshot: snapshotSummary(snapshot), UpdateEvent: eventSummary(event)}
-	if err := s.recordKnowledgeMutation(ctx, key, result); err != nil {
-		if errors.Is(err, ErrIdempotencyKeyReused) {
-			return domain.KnowledgeLifecycleMutation{}, err
-		}
-		if raw, found, readErr := s.GetKnowledgeMutation(ctx, key); readErr == nil && found {
-			var replay domain.KnowledgeLifecycleMutation
-			if json.Unmarshal(raw, &replay) == nil {
-				return replay, nil
-			}
-		}
-		return domain.KnowledgeLifecycleMutation{}, err
-	}
-	return result, nil
+func (s *PostgresStore) PublishKnowledgeRevisionLifecycle(ctx context.Context, revisionID string, key domain.KnowledgeMutationKey, acknowledgeUnvalidated bool) (domain.KnowledgeLifecycleMutation, error) {
+	return s.publishOrActivateKnowledgeRevision(ctx, revisionID, key, acknowledgeUnvalidated)
 }
 
 func (s *PostgresStore) DisableKnowledgeDocument(ctx context.Context, documentID string, key domain.KnowledgeMutationKey) (domain.KnowledgeLifecycleMutation, error) {
@@ -879,7 +864,10 @@ func deliverySummary(message domain.KnowledgeOutboxMessage) domain.RevisionDeliv
 }
 
 func snapshotSummary(snapshot domain.KnowledgeSnapshot) *domain.KnowledgeSnapshotSummary {
-	result := &domain.KnowledgeSnapshotSummary{SnapshotID: snapshot.SnapshotID, Status: snapshot.Status, ManifestSHA256: snapshot.ManifestSHA256, CreatedAt: snapshot.CreatedAt}
+	result := &domain.KnowledgeSnapshotSummary{
+		SnapshotID: snapshot.SnapshotID, Status: snapshot.Status, ManifestSHA256: snapshot.ManifestSHA256,
+		CreatedAt: snapshot.CreatedAt, Members: snapshot.Members, Acceptance: snapshot.Acceptance,
+	}
 	if snapshot.PublishedAt != nil {
 		result.PublishedAt = *snapshot.PublishedAt
 	}
@@ -887,7 +875,10 @@ func snapshotSummary(snapshot domain.KnowledgeSnapshot) *domain.KnowledgeSnapsho
 }
 
 func eventSummary(event domain.KnowledgeUpdateEvent) *domain.KnowledgeUpdateEventSummary {
-	return &domain.KnowledgeUpdateEventSummary{EventID: event.EventID, EventType: event.EventType, DocumentID: event.DocumentID, RevisionID: event.RevisionID, SnapshotID: event.SnapshotID, CreatedAt: event.OccurredAt}
+	return &domain.KnowledgeUpdateEventSummary{
+		EventID: event.EventID, EventType: event.EventType, DocumentID: event.DocumentID, RevisionID: event.RevisionID,
+		SnapshotID: event.SnapshotID, CreatedAt: event.OccurredAt, AcceptanceStatus: event.AcceptanceStatus, OnboardingRunID: event.OnboardingRunID,
+	}
 }
 
 func snapshotID(snapshot *domain.KnowledgeSnapshot) string {

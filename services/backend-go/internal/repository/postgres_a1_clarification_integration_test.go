@@ -46,7 +46,7 @@ func TestPostgresA1ClarificationLifecycleAndEvidence(t *testing.T) {
 	}
 	defer store.Close()
 	versions, err := store.ListSchemaMigrations(ctx)
-	if err != nil || strings.Join(versions, ",") != "001,002,003,004,005,006,007,008,009,010,011,012,013,014,015,016,017,018,019,020,021,022,023,024" {
+	if err != nil || strings.Join(versions, ",") != "001,002,003,004,005,006,007,008,009,010,011,012,013,014,015,016,017,018,019,020,021,022,023,024,025,026" {
 		t.Fatalf("migration versions = %#v err=%v", versions, err)
 	}
 	policyConfig := store.CreateConfig("a1-model", "prompt_a1", "concise", domain.AnswerPolicyV1, .2, 1, 1024)

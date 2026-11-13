@@ -121,10 +121,11 @@ func TestServerK4LifecycleHTTPContract(t *testing.T) {
 	}
 
 	publish := func(id, key string) (*http.Response, map[string]any) {
-		req, err := http.NewRequest(http.MethodPost, ts.URL+"/api/kb/revisions/"+id+"/publish", nil)
+		req, err := http.NewRequest(http.MethodPost, ts.URL+"/api/kb/revisions/"+id+"/publish", strings.NewReader(`{"acknowledge_unvalidated":true}`))
 		if err != nil {
 			t.Fatalf("new publish request: %v", err)
 		}
+		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Idempotency-Key", key)
 		resp, err := admin.Do(req)
 		if err != nil {

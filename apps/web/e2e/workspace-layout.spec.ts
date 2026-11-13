@@ -82,10 +82,42 @@ test("系统管理员可以在配置台确认 ready revision 发布", async ({ p
   await page.route("**/api/kb/documents/doc_pending", async (route) => {
     await route.fulfill({ json: { document, revisions: [{ revision: published ? { ...revision, status: "published" } : revision, in_active_snapshot: published }], active_snapshot_id: published ? "snap_new" : "snap_old" } });
   });
-  await page.route("**/api/kb/revisions/rev_pending/publish", async (route) => {
+  await page.route("**/api/kb/revisions/rev_pending/prepare-publish", async (route) => {
     expect(route.request().headers()["idempotency-key"]).toBeTruthy();
+    await route.fulfill({
+      json: {
+        document,
+        snapshot: {
+          snapshot_id: "snap_pending",
+          status: "pending_publish",
+          manifest_sha256: "manifest-pending",
+          created_at: "2026-11-04T00:01:00Z",
+          members: [
+            { snapshot_id: "snap_pending", revision_id: "rev_old", document_id: "doc_old", checksum_sha256: "sha-old" },
+            { snapshot_id: "snap_pending", revision_id: "rev_pending", document_id: "doc_pending", checksum_sha256: "sha-pending" },
+          ],
+          acceptance: { status: "unvalidated", display_label: "未跑", requires_unvalidated_acknowledgement: true },
+        },
+      },
+    });
+  });
+  await page.route("**/api/kb/snapshots/snap_pending/activate", async (route) => {
+    expect(route.request().headers()["idempotency-key"]).toBeTruthy();
+    expect(route.request().postDataJSON()).toMatchObject({ acknowledge_unvalidated: true });
     published = true;
-    await route.fulfill({ json: { document, snapshot: { snapshot_id: "snap_new", status: "published", manifest_sha256: "manifest-new", created_at: "2026-11-04T00:01:00Z", published_at: "2026-11-04T00:01:00Z" } } });
+    await route.fulfill({
+      json: {
+        document,
+        snapshot: {
+          snapshot_id: "snap_pending",
+          status: "published",
+          manifest_sha256: "manifest-pending",
+          created_at: "2026-11-04T00:01:00Z",
+          published_at: "2026-11-04T00:02:00Z",
+          acceptance: { status: "unvalidated", display_label: "已发布 · 未验收", requires_unvalidated_acknowledgement: false },
+        },
+      },
+    });
   });
   await page.route("**/api/admin/evidence/**", (route) => route.fulfill({ json: { items: [] } }));
   await page.route("**/api/eval/reports**", (route) => route.fulfill({ json: { items: [] } }));
@@ -94,9 +126,12 @@ test("系统管理员可以在配置台确认 ready revision 发布", async ({ p
   await login(page, adminUsername, adminPassword, "/config", "admin");
   await expect(page.getByTestId("knowledge-publish-approval")).toBeVisible();
   await expect(page.getByTestId("pending-publish-rev_pending")).toContainText("new-policy.md");
-  page.once("dialog", (dialog) => void dialog.accept());
-  await page.getByTestId("publish-revision-rev_pending").click();
-  await expect(page.getByText("已发布到新知识快照 snap_new。")).toBeVisible();
+  await page.getByTestId("prepare-publish-rev_pending").click();
+  await expect(page.getByTestId("knowledge-acceptance-label")).toHaveText("未跑");
+  await expect(page.getByTestId("publish-direct")).toBeDisabled();
+  await page.getByRole("checkbox", { name: "我知道尚未完成上线验收，仍要发布" }).check();
+  await page.getByTestId("publish-direct").click();
+  await expect(page.getByText("已发布 · 未验收")).toBeVisible();
   await expect(page.getByText("暂无待发布 revision。")).toBeVisible();
 });
 

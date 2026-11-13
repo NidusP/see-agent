@@ -13,6 +13,8 @@
 
 不要把 Qwen fixture 的 `.51` 复制到另一 embedding 模型、collection、chunk/index 或业务语料。它只证明固定 K8-R3 fixture 的分离能力。
 
+产品交互上，发布前上线验收是推荐项，不是硬性前置。系统管理员可以在明确确认后直接发布；更稳妥的做法是先准备待发布快照（旧+新，暂不切换线上问答），完成审核题目和验收后再激活。详细规则见 [可选的发布前知识验收设计](../design-docs/single-agent-v1-optional-prepublish-onboarding-design.md)。停用和删除旧知识仍要求相应 passing run。
+
 ## 上传前清单
 
 1. 确认管理员已经拿到可上传的业务文件及其内容授权；支持 `txt`、`md`、`json`、`pdf`、`docx`、`xlsx`、`pptx`。
@@ -25,8 +27,8 @@
 
 1. 知识库管理员在 `/knowledge` 上传每份新文件；系统管理员确认 ready revision 的 publish。每一次 mutation 使用独立 idempotency key；不要绕过 Web/Backend 直接写 Postgres、对象存储或 Qdrant。
 2. 记录 `document_id`、`revision_id`、checksum、delivery id 和 source format。等待 delivery/Runtime projection 成功，并确认 revision 为 `ready`、具有 chunk manifest。
-3. 对每个 ready revision 显式 publish。Backend 会从现有 active snapshot 复制成员、加入/替换目标 revision，并创建包含**旧+新**知识的 successor snapshot；不得手动构造空 snapshot。
-4. 在该 successor snapshot 上运行 onboarding eval：
+3. 对每个 ready revision，由系统管理员准备或发布 successor snapshot。推荐先生成包含**旧+新**知识的待发布快照、完成 onboarding 后再激活；若选择直接发布，须明确确认尚未验收。不得手动构造空 snapshot。
+4. 在该 successor snapshot（待发布或已发布）上运行 onboarding eval：
    - 每条 must-answer 必须引用新 revision，且 locator/答案要点正确；
    - must-refuse 不得得到无关 citation；
    - upload/reindex 失败、scope/manifest 不一致或 runtime error 一律视为环境失败，不能当成质量分数；

@@ -3,8 +3,8 @@
 ## 文档控制
 
 - 状态：活动规格
-- 版本：`v1.2`
-- 更新日期：`2026-07-20`
+- 版本：`v1.3`
+- 更新日期：`2026-11-12`
 - 范围：仅限单智能体产品
 - 不在范围内：平台化、代码初始化、多智能体编排
 
@@ -61,14 +61,14 @@
 - 上传和删除知识文件
 - 触发重新索引
 - 创建、审核和运行新知识 onboarding 验收
-- 上传和索引完成后等待系统管理员确认发布 successor snapshot
+- 上传和索引完成后等待系统管理员确认发布；可在待发布快照上先做 onboarding 验收，但验收不是发布的硬性前置
 
 ### 5.2 系统管理员
 
 可以：
 
 - 拥有知识库管理员全部能力
-- 审核并发布 ready revision，使其进入新的知识 snapshot
+- 审核并发布 ready revision，使其进入新的知识 snapshot。发布前上线验收是推荐项；直接发布必须明确确认尚未验收仍要发布，并在产品中展示未验收或验收未通过状态
 - 管理智能体提示词、风格、模型与检索参数候选
 - 查看全局 execution/eval evidence、组织 Q1 对照实验
 - 在评测通过后审批发布或回滚参数配置
@@ -166,6 +166,7 @@ V1 必须支持：
 - 系统必须支持增量索引，而不是每次更新都要求全量重建。
 - 系统必须将逻辑文档与不可变 revision 区分开，并记录 revision 的发布、生效、禁用和删除事件。
 - 系统必须仅在完整索引成功后发布新知识 snapshot；失败 revision 不得影响当前可回答知识。
+- 系统管理员可以将 ready revision 直接发布为当前问答知识；发布前上线验收是推荐项，不是硬性前置。直接发布必须有明确确认。新问题只检索已激活的 published snapshot，不得检索待发布快照。发布后必须展示已验收、未验收或验收未通过（仍在服务）状态，并允许补跑验收。
 
 ### 8.3 智能体配置
 
@@ -230,8 +231,8 @@ V1 必须支持：
 - 运行证据、知识 lifecycle 事件和评测报告必须持久化在私有部署的权威存储中；管理员读取不得改写历史回答、K5 provenance 或 K6 核验结果。
 - 系统必须支持基于精选问题集运行离线评测。
 - 管理员必须能在产品内为新知识创建和审核 onboarding 问题集：每题要么是带预期 document/revision、locator 和答案要点的 must-answer，要么是没有预期来源的 must-refuse。模型生成的问题或答案只能作为草稿，未经管理员审核不得成为评测真值。
-- 管理员必须能在一个已发布 successor snapshot 上启动固定 scope 的 onboarding evaluation，并查看每题的回答/拒答、citation、locator、答案要点命中、runtime error 与总 gate verdict；该 run 必须冻结 snapshot manifest、config pair 和问题集 hash。
-- onboarding evaluation 不得修改知识、参数、历史回答或 active release。它通过后才可作为“新知识已验收”的证据来退役测试 document；若同时改变 retrieval config，仍须走 Q1 approval/publish。
+- 管理员必须能在一个待发布或已发布的 successor snapshot 上启动固定 scope 的 onboarding evaluation，并查看每题的回答/拒答、citation、locator、答案要点命中、runtime error 与总 gate verdict；该 run 必须冻结 snapshot manifest、config pair 和问题集 hash。系统可以按新知识起草题目，但只能作为草稿，未经管理员审核不得成为评测真值，也不得自动通过。
+- onboarding evaluation 不得修改知识、参数、历史回答或 active release，也不得单独阻止系统管理员在明确确认后直接发布。它通过后才可作为“新知识已验收”的证据，并作为退役测试 document 的前置；若同时改变 retrieval config，仍须走 Q1 approval/publish。
 - 系统必须维护管理员可查询的知识更新日历与 snapshot 记录。
 - 评测必须覆盖知识新增、替换、禁用、删除、未来生效与历史回答核验。
 - 系统应该为后续采集用户反馈预留扩展位，以便未来扩展评测。

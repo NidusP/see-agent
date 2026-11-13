@@ -14,6 +14,7 @@ import {
 } from "react";
 
 import {
+  activateKnowledgeSnapshot,
   createIdempotencyKey,
   deleteKnowledgeDocument,
   disableKnowledgeDocument,
@@ -24,7 +25,6 @@ import {
   listKnowledgeDocuments,
   listLegacyKnowledgeFiles,
   listKnowledgeUpdates,
-  publishKnowledgeRevision,
   uploadKnowledgeDocument,
   uploadKnowledgeRevision,
   ApiError as KnowledgeApiError,
@@ -51,6 +51,7 @@ import {
   type OnboardingDataset,
   type OnboardingRun,
 } from "../_lib/onboarding-quality-api";
+import { PrepublishPanel, PublishedAcceptanceReminder } from "./prepublish-panel";
 import { isSystemAdmin, type SessionRole } from "../_lib/role";
 
 type EmptyFilter = "";
@@ -97,7 +98,8 @@ interface KnowledgeContextValue {
   uploadInitialRevision: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   uploadReplacementRevision: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   refresh: () => Promise<void>;
-  publishRevision: (revision: KnowledgeRevision) => Promise<void>;
+  makeupSnapshotId?: string;
+  requestMakeup: (snapshotId: string) => void;
   disableDocument: () => Promise<void>;
   deleteDocument: () => Promise<void>;
   selectSnapshot: (snapshotId: string) => Promise<void>;
@@ -135,7 +137,12 @@ export function KnowledgeWorkspaceProvider({ children, currentRole }: { children
   const [displayName, setDisplayName] = useState("");
   const [initialEffectiveAt, setInitialEffectiveAt] = useState("");
   const [replacementEffectiveAt, setReplacementEffectiveAt] = useState("");
+  const [makeupSnapshotId, setMakeupSnapshotId] = useState<string>();
   const canPublish = isSystemAdmin(currentRole);
+  const requestMakeup = useCallback((snapshotId: string) => {
+    setMakeupSnapshotId(snapshotId);
+    document.getElementById("onboarding-quality-workspace")?.scrollIntoView({ block: "nearest" });
+  }, []);
 
   const recoverUnauthenticated = useCallback(async () => {
     await recoverFromUnauthenticated(currentKnowledgePath());
@@ -413,31 +420,6 @@ export function KnowledgeWorkspaceProvider({ children, currentRole }: { children
     [handleUnauthenticated, reloadDocument, replacementEffectiveAt, selectedDetail?.document.document_id],
   );
 
-  const publishRevision = useCallback(
-    async (revision: KnowledgeRevision) => {
-      if (!window.confirm(`确认发布 revision ${revision.revision_id} 吗？`)) {
-        return;
-      }
-
-      setAction("publish");
-      setError(undefined);
-      setMessage(undefined);
-      try {
-        const response = await publishKnowledgeRevision(revision.revision_id, createIdempotencyKey());
-        setMessage(response.snapshot ? `已发布到快照 ${response.snapshot.snapshot_id}。` : "已完成发布操作。");
-        await reloadDocument(response.document.document_id);
-      } catch (publishError) {
-        if (handleUnauthenticated(publishError)) {
-          return;
-        }
-        setError(readError(publishError));
-      } finally {
-        setAction(undefined);
-      }
-    },
-    [handleUnauthenticated, reloadDocument],
-  );
-
   const disableDocument = useCallback(async () => {
     const document = selectedDetail?.document;
     if (!document || !window.confirm(`确认停用文档 ${document.display_name} 吗？`)) {
@@ -522,7 +504,8 @@ export function KnowledgeWorkspaceProvider({ children, currentRole }: { children
       uploadInitialRevision,
       uploadReplacementRevision,
       refresh,
-      publishRevision,
+      makeupSnapshotId,
+      requestMakeup,
       disableDocument,
       deleteDocument,
       selectSnapshot,
@@ -543,7 +526,8 @@ export function KnowledgeWorkspaceProvider({ children, currentRole }: { children
       legacyFiles,
       loading,
       message,
-      publishRevision,
+      makeupSnapshotId,
+      requestMakeup,
       refresh,
       refreshing,
       replacementEffectiveAt,
@@ -691,6 +675,7 @@ export function KnowledgeWorkspace({ onOpenDetails }: { onOpenDetails?: () => vo
                       <>
                         <strong>{document.current_revision.filename}</strong>
                         <span><StatusBadge status={document.current_revision.status} /></span>
+                        {document.acceptance?.display_label ? <span data-testid="knowledge-acceptance-label">{document.acceptance.display_label}</span> : null}
                       </>
                     ) : "-"}
                   </td>
@@ -730,12 +715,18 @@ export function KnowledgeWorkspace({ onOpenDetails }: { onOpenDetails?: () => vo
 }
 
 function OnboardingQualityWorkspace() {
-  const { handleUnauthenticated } = useKnowledgeContext();
+  const knowledge = useKnowledgeContext();
+  const { handleUnauthenticated } = knowledge;
   const [datasets, setDatasets] = useState<OnboardingDataset[]>([]);
   const [selected, setSelected] = useState<OnboardingDataset>();
   const [lastRun, setLastRun] = useState<OnboardingRun>();
   const [name, setName] = useState("");
   const [snapshotID, setSnapshotID] = useState("");
+  const [appliedMakeupId, setAppliedMakeupId] = useState<string | undefined>();
+  if (knowledge.makeupSnapshotId && knowledge.makeupSnapshotId !== appliedMakeupId) {
+    setAppliedMakeupId(knowledge.makeupSnapshotId);
+    setSnapshotID(knowledge.makeupSnapshotId);
+  }
   const [caseType, setCaseType] = useState<"must_answer" | "must_refuse">("must_answer");
   const [question, setQuestion] = useState("");
   const [revisionIDs, setRevisionIDs] = useState("");
@@ -787,12 +778,12 @@ function OnboardingQualityWorkspace() {
   };
   const refreshRun = async () => { if (!lastRun) return; setLoading(true); try { setLastRun((await getOnboardingRun(lastRun.run_id)).run); } catch (reason) { reportRequestError(reason); } finally { setLoading(false); } };
 
-  return <section className="quality-operations" data-testid="onboarding-quality-workspace">
+  return <section className="quality-operations" id="onboarding-quality-workspace" data-testid="onboarding-quality-workspace">
     <div className="section-heading"><div><p className="eyebrow">上线质量门</p><h3>新知识验收</h3></div><span>上传成功不等于回答正确</span></div>
-    <p className="muted-copy">选择已发布 snapshot，录入业务审核过的真值问题。系统将固定 snapshot、模型与检索配置实际运行；只有全通过才可作为退役测试知识的证据。它不会自动发布配置或删除知识。</p>
+    <p className="muted-copy">可对待发布或已发布 snapshot 录入并审核真值问题。系统将固定 snapshot、模型与检索配置实际运行；只有全通过才可作为退役证据。验收是发布的推荐项，不会自动发布配置，也不会阻断聊天或继续上传。</p>
     {error ? <p className="error-copy" role="alert">{error}</p> : null}{message ? <p className="success-copy" role="status">{message}</p> : null}
     <div className="quality-grid">
-      <form className="config-form quality-form" onSubmit={createDataset}><h4>1. 创建验收集</h4><label><span>名称</span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：客户政策 2026-07" /></label><label><span>已发布 snapshot id</span><input value={snapshotID} onChange={(event) => setSnapshotID(event.target.value)} placeholder="从更新日历选择" /></label><button type="submit" disabled={loading}>创建草稿</button></form>
+      <form className="config-form quality-form" onSubmit={createDataset}><h4>1. 创建验收集</h4><label><span>名称</span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：客户政策 2026-07" /></label><label><span>待发布或已发布 snapshot id</span><input value={snapshotID} onChange={(event) => setSnapshotID(event.target.value)} placeholder="从更新日历或待发布快照复制" /></label><button type="submit" disabled={loading}>创建草稿</button></form>
       <div className="version-list quality-list"><h4>验收集</h4>{datasets.map((dataset) => <button key={dataset.dataset_id} type="button" className="evidence-list-row" aria-pressed={selected?.dataset_id === dataset.dataset_id} onClick={() => void select(dataset.dataset_id)}><span><strong>{dataset.name}</strong><small>{dataset.dataset_id} · {dataset.knowledge_snapshot_id}</small></span><StatusBadge status={dataset.status} /></button>)}{datasets.length === 0 ? <p className="muted-copy">尚未创建。</p> : null}</div>
     </div>
     {selected ? <div className="quality-grid"><form className="config-form quality-form" onSubmit={createCase}><h4>2. 审核真值用例</h4><p className="muted-copy">当前 {selected.status} · {selected.cases?.length ?? 0} 题</p><label><span>类型</span><select value={caseType} disabled={selected.status !== "draft" || loading} onChange={(event) => setCaseType(event.target.value as "must_answer" | "must_refuse")}><option value="must_answer">必须回答并引用</option><option value="must_refuse">必须拒答</option></select></label><label><span>问题</span><textarea value={question} disabled={selected.status !== "draft" || loading} onChange={(event) => setQuestion(event.target.value)} /></label>{caseType === "must_answer" ? <><label><span>期望 revision（逗号分隔）</span><input value={revisionIDs} disabled={selected.status !== "draft" || loading} onChange={(event) => setRevisionIDs(event.target.value)} /></label><label><span>定位提示（逗号分隔）</span><input value={locatorHints} disabled={selected.status !== "draft" || loading} onChange={(event) => setLocatorHints(event.target.value)} /></label><label><span>答案要点（逗号分隔）</span><input value={answerPoints} disabled={selected.status !== "draft" || loading} onChange={(event) => setAnswerPoints(event.target.value)} /></label></> : null}<button type="submit" disabled={selected.status !== "draft" || loading}>添加 reviewed 用例</button></form>
@@ -899,15 +890,7 @@ export function KnowledgeDetailWorkspace() {
                       <td><RevisionFacts revision={revision} /></td>
                       <td>{in_active_snapshot ? "当前快照成员" : "-"}</td>
                       <td>
-                        {revision.status === "ready" && document.status === "active" && knowledge.canPublish ? (
-                          <button
-                            type="button"
-                            onClick={() => knowledge.publishRevision(revision)}
-                            disabled={knowledge.action === "publish"}
-                          >
-                            {knowledge.action === "publish" ? "发布中" : "发布"}
-                          </button>
-                        ) : revision.status === "ready" && document.status === "active" ? <span className="muted-copy">等待系统管理员确认发布</span> : "-"}
+                        {revision.status === "ready" && document.status === "active" ? <span className="muted-copy" data-testid="waiting-for-publish">等待系统管理员发布</span> : "-"}
                       </td>
                     </tr>
                   ))}
@@ -915,6 +898,21 @@ export function KnowledgeDetailWorkspace() {
               </table>
             </div>
           </section>
+
+          <PublishedAcceptanceReminder acceptance={detail.acceptance} snapshotId={detail.active_snapshot_id} onMakeup={knowledge.requestMakeup} />
+          {detail.pending_snapshot ? (
+            <PrepublishPanel
+              mode={knowledge.canPublish ? "publish" : "wait"}
+              snapshot={detail.pending_snapshot}
+              onMakeup={knowledge.requestMakeup}
+              onReload={() => knowledge.refresh()}
+              onActivate={async (acknowledgeUnvalidated) => {
+                if (!detail.pending_snapshot) return;
+                await activateKnowledgeSnapshot(detail.pending_snapshot.snapshot_id, createIdempotencyKey(), acknowledgeUnvalidated);
+                await knowledge.refresh();
+              }}
+            />
+          ) : null}
 
           <section className="detail-task-card lifecycle-danger-zone">
             <div className="section-heading">
@@ -1015,6 +1013,7 @@ function KnowledgeUpdateCalendar({
                       onClick={() => void onSelectSnapshot(update.snapshot_id!)}
                     >
                       {update.snapshot_id}
+                      {update.acceptance?.display_label ? <span data-testid="knowledge-acceptance-label">{update.acceptance.display_label}</span> : null}
                     </button>
                   ) : "-"}
                 </td>
@@ -1076,6 +1075,7 @@ function KnowledgeSnapshotDetail({
             <div><dt>snapshot_id</dt><dd>{snapshot.snapshot_id}</dd></div>
             <div><dt>manifest</dt><dd>{snapshot.manifest_sha256}</dd></div>
             <div><dt>published_at</dt><dd>{formatDateTime(snapshot.published_at)}</dd></div>
+            {snapshot.acceptance?.display_label ? <div><dt>验收状态</dt><dd data-testid="knowledge-acceptance-label">{snapshot.acceptance.display_label}</dd></div> : null}
           </dl>
           <details>
             <summary>查看成员 ({snapshot.members.length})</summary>

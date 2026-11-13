@@ -255,6 +255,20 @@ func (s *Service) FreezeOnboardingDataset(ctx context.Context, actor, id, key st
 	}
 	return store.FreezeOnboardingDataset(ctx, actor, id, key)
 }
+func (s *Service) GenerateOnboardingDrafts(ctx context.Context, actor, id, key string) ([]domain.OnboardingCase, error) {
+	store, err := s.onboardingQualityStore()
+	if err != nil {
+		return nil, err
+	}
+	return store.GenerateOnboardingDrafts(ctx, actor, id, key)
+}
+func (s *Service) ReviewOnboardingCase(ctx context.Context, actor, datasetID, caseID, key string, input domain.OnboardingCase) (domain.OnboardingCase, error) {
+	store, err := s.onboardingQualityStore()
+	if err != nil {
+		return domain.OnboardingCase{}, err
+	}
+	return store.ReviewOnboardingCase(ctx, actor, datasetID, caseID, key, input)
+}
 func (s *Service) CreateOnboardingRun(ctx context.Context, actor, id, key string) (domain.OnboardingRun, error) {
 	store, err := s.onboardingQualityStore()
 	if err != nil {

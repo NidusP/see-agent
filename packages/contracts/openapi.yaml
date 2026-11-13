@@ -506,6 +506,54 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "409":
           $ref: "#/components/responses/ConflictError"
+  /api/kb/revisions/{revision_id}/prepare-publish:
+    post:
+      tags: [knowledge-base]
+      summary: Create or return the unpublished successor snapshot for a ready revision (K8-R4b)
+      operationId: prepareKnowledgeRevisionPublish
+      parameters:
+        - name: revision_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Pending snapshot prepared without switching the active pointer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeLifecycleMutationResponse"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+  /api/kb/snapshots/{snapshot_id}/activate:
+    post:
+      tags: [knowledge-base]
+      summary: Activate a pending_publish snapshot as the current published knowledge (K8-R4b)
+      operationId: activateKnowledgeSnapshot
+      parameters:
+        - name: snapshot_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KnowledgePublishAcknowledgement"
+      responses:
+        "200":
+          description: Pending snapshot activated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeLifecycleMutationResponse"
+        "409":
+          $ref: "#/components/responses/ConflictError"
   /api/kb/documents/{document_id}/disable:
     post:
       tags: [knowledge-base]
@@ -1903,27 +1951,7 @@ components:
           type: string
         status:
           type: string
-          enum: [building, published, retired]
-        manifest_sha256:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        published_at:
-          type: string
-          format: date-time
-      additionalProperties: false
-    KnowledgeSnapshot:
-      type: object
-      required: [snapshot_id, status, manifest_sha256, created_at, members]
-      properties:
-        snapshot_id:
-          type: string
-        parent_snapshot_id:
-          type: string
-        status:
-          type: string
-          enum: [building, published, retired]
+          enum: [building, pending_publish, published, retired]
         manifest_sha256:
           type: string
         created_at:
@@ -1936,6 +1964,54 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/KnowledgeSnapshotMember"
+        acceptance:
+          $ref: "#/components/schemas/KnowledgeAcceptance"
+      additionalProperties: false
+    KnowledgeAcceptance:
+      type: object
+      required: [status, display_label, requires_unvalidated_acknowledgement]
+      properties:
+        status:
+          type: string
+          enum: [accepted, unvalidated, failed]
+        display_label:
+          type: string
+        onboarding_run_id:
+          type: string
+        requires_unvalidated_acknowledgement:
+          type: boolean
+      additionalProperties: false
+    KnowledgePublishAcknowledgement:
+      type: object
+      properties:
+        acknowledge_unvalidated:
+          type: boolean
+      additionalProperties: false
+    KnowledgeSnapshot:
+      type: object
+      required: [snapshot_id, status, manifest_sha256, created_at, members]
+      properties:
+        snapshot_id:
+          type: string
+        parent_snapshot_id:
+          type: string
+        status:
+          type: string
+          enum: [building, pending_publish, published, retired]
+        manifest_sha256:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        published_at:
+          type: string
+          format: date-time
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/KnowledgeSnapshotMember"
+        acceptance:
+          $ref: "#/components/schemas/KnowledgeAcceptance"
       additionalProperties: false
     KnowledgeSnapshotMember:
       type: object
@@ -1975,6 +2051,11 @@ components:
         created_at:
           type: string
           format: date-time
+        acceptance_status:
+          type: string
+          enum: [accepted, unvalidated, failed]
+        onboarding_run_id:
+          type: string
       additionalProperties: false
     KnowledgeFreshnessScanStatus:
       type: string
@@ -2027,6 +2108,13 @@ components:
         occurred_at:
           type: string
           format: date-time
+        acceptance_status:
+          type: string
+          enum: [accepted, unvalidated, failed]
+        onboarding_run_id:
+          type: string
+        acceptance:
+          $ref: "#/components/schemas/KnowledgeAcceptance"
         freshness_scan:
           $ref: "#/components/schemas/KnowledgeFreshnessScan"
       additionalProperties: false
@@ -2781,7 +2869,7 @@ components:
         expected_answer_points:
           type: array
           items: {type: string}
-        review_status: {type: string, enum: [draft, reviewed]}
+        review_status: {type: string, enum: [draft, draft_generated, reviewed]}
         reviewed_by: {type: string}
         created_at: {type: string, format: date-time}
         updated_at: {type: string, format: date-time}

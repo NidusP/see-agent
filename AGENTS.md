@@ -35,6 +35,8 @@
   - `K2` 的 migration、权威表、发布事务、legacy reconciliation 和回滚设计。
 - `docs/design-docs/single-agent-v1-k4-lifecycle-api-design.md`
   - `K4` 管理员 document/revision lifecycle 的 API、写入路径、idempotency 与 disable/delete 状态语义；K4 Backend/Web 必须遵守。
+- `docs/design-docs/single-agent-v1-optional-prepublish-onboarding-design.md`
+  - `K8-R4b` 可选的发布前知识验收：待发布快照、可直接发布、验收为推荐项；停用/删除安全门不变。已实现，交互以该设计为准。
 - `docs/design-docs/single-agent-v1-k5-snapshot-provenance-design.md`
   - `K5` 每消息 snapshot scope、Runtime revision filter、citation provenance 与 legacy fallback 边界；K5 Backend/Runtime/Web 必须遵守。
 - `docs/design-docs/single-agent-v1-citation-anchors-design.md`

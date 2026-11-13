@@ -7,6 +7,7 @@
 - 更新日期：`2026-07-14`
 - 工作包：`K4`
 - 上位设计：[知识演进设计](single-agent-v1-knowledge-evolution-design.md)、[知识演进契约](single-agent-v1-knowledge-evolution-contract.md)、[K3-K6 交付计划](../exec-plans/active/single-agent-v1-k3-k6-delivery-plan.md)。
+- 后续交互：[可选的发布前知识验收](single-agent-v1-optional-prepublish-onboarding-design.md)（`K8-R4b`，已实现）。准备发布与激活拆开之后，本文中的一步 `publish` 是兼容入口：没有待发布快照且没有通过验收时，必须带未验收确认。
 
 ## 1. 决策
 
@@ -58,6 +59,8 @@ create/revision upload 统一返回 `{ document, revision, delivery }`；publish
 ### 3.2 发布
 
 仅 `ready` revision 可以发布。沿用 K2 的 active-pointer transaction：锁 pointer，复制旧成员、替换同 document 的旧 member，写 immutable manifest、snapshot、update event/outbox，再切换 pointer。重复 publish 对同一 active revision 返回同一 snapshot。K4 不允许空 snapshot。
+
+`K8-R4b` 已把「准备待发布快照」与「激活为当前知识」拆开。发布前验收是推荐项；直接发布须明确确认。交互和状态以可选发布前验收设计为准。本节保留的一步 `publish` 在没有待发布快照且没有通过验收时等同于准备并立即激活，且必须带未验收确认。
 
 ### 3.3 Disable 与 delete
 

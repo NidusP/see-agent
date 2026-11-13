@@ -764,6 +764,56 @@ func postgresMigrations() []postgresMigration {
 				`ALTER TABLE answer_feedback ADD CONSTRAINT answer_feedback_kind_check CHECK (kind IN ('correct','incorrect','should_refuse','missing_evidence','wrong_evidence','outdated_knowledge','knowledge_gap','should_clarify','unnecessary_clarification','incomplete_coverage'))`,
 			},
 		},
+		{
+			version: "026",
+			name:    "optional_prepublish_onboarding",
+			statements: []string{
+				`ALTER TABLE knowledge_snapshots DROP CONSTRAINT IF EXISTS knowledge_snapshots_status_check`,
+				`ALTER TABLE knowledge_snapshots ADD CONSTRAINT knowledge_snapshots_status_check CHECK (status IN ('building','pending_publish','published','retired'))`,
+				`CREATE INDEX IF NOT EXISTS idx_knowledge_snapshots_pending ON knowledge_snapshots(status, created_at) WHERE status = 'pending_publish'`,
+				`ALTER TABLE knowledge_update_events ADD COLUMN IF NOT EXISTS acceptance_status TEXT`,
+				`ALTER TABLE knowledge_update_events ADD COLUMN IF NOT EXISTS onboarding_run_id TEXT`,
+				`ALTER TABLE knowledge_update_events DROP CONSTRAINT IF EXISTS knowledge_update_events_acceptance_status_check`,
+				`ALTER TABLE knowledge_update_events ADD CONSTRAINT knowledge_update_events_acceptance_status_check CHECK (acceptance_status IS NULL OR acceptance_status IN ('accepted','unvalidated','failed'))`,
+				`DO $$
+				DECLARE constraint_name text;
+				BEGIN
+					FOR constraint_name IN
+						SELECT con.conname
+						FROM pg_constraint con
+						WHERE con.conrelid = 'onboarding_cases'::regclass
+							AND con.contype = 'c'
+							AND pg_get_constraintdef(con.oid) ILIKE '%review_status%'
+					LOOP
+						EXECUTE format('ALTER TABLE onboarding_cases DROP CONSTRAINT %I', constraint_name);
+					END LOOP;
+				END $$`,
+				`ALTER TABLE onboarding_cases ADD CONSTRAINT onboarding_cases_review_status_check CHECK (review_status IN ('draft','draft_generated','reviewed'))`,
+				`CREATE OR REPLACE FUNCTION knowledge_active_snapshot_must_be_published()
+				RETURNS trigger
+				LANGUAGE plpgsql
+				AS $$
+				BEGIN
+					IF NEW.snapshot_id IS NULL THEN
+						RETURN NEW;
+					END IF;
+					IF NOT EXISTS (
+						SELECT 1 FROM knowledge_snapshots
+						WHERE snapshot_id = NEW.snapshot_id AND status = 'published'
+					) THEN
+						RAISE EXCEPTION 'active knowledge snapshot % is not published', NEW.snapshot_id
+							USING ERRCODE = '23514';
+					END IF;
+					RETURN NEW;
+				END;
+				$$`,
+				`DROP TRIGGER IF EXISTS knowledge_active_snapshot_published ON knowledge_active_snapshot`,
+				`CREATE TRIGGER knowledge_active_snapshot_published
+					BEFORE INSERT OR UPDATE OF snapshot_id ON knowledge_active_snapshot
+					FOR EACH ROW
+					EXECUTE FUNCTION knowledge_active_snapshot_must_be_published()`,
+			},
+		},
 	}
 }
 
