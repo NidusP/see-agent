@@ -2,7 +2,7 @@
 
 ## 文档控制
 
-- 状态：`verified / U6a.6_chat_reading_hierarchy_complete`
+- 状态：`verified / U6b_chat_knowledge_controls_migrated`
 - 更新日期：`2026-07-20`
 - Owner：`p`
 - 权威设计：[Web UI 设计](../../design-docs/single-agent-v1-web-ui-design.md)、[系统配置台交互设计](../../design-docs/single-agent-v1-system-config-console-ui-design.md)
@@ -104,4 +104,27 @@
 - `pnpm lint && pnpm typecheck && pnpm build` 通过。Playwright：`config-version-history`、`k7-admin-evidence`、`q1-quality-operations`、`theme-system-ui` 与 `workspace-layout` 合计 `9 passed`。
 - 选择器定位回归：组件默认在触发框下边缘 `0-3px` 内展开；空间不足时才由定位 primitive 翻转到上边缘。`k7-admin-evidence` 对此几何关系有稳定等待后的断言；与 `theme-system-ui` 合计 `3 passed`。
 - `U6a.1` 审计已移除无调用点的 login 原生 input/button、配置卡 button、evidence filter input 与紧凑主题原生 select 规则。仍有调用点的聊天/知识库旧控件规则全部以 `:not([data-slot])` 与 shadcn/Base UI 隔离；全局仅保留字体、cursor 等无尺寸/定位副作用的基础语义。`pnpm lint`、`pnpm typecheck`、`pnpm build` 通过；登录、主题、系统配置、知识库生命周期与角色布局 Playwright `11 passed`。
-- 残余工作：`U6b` 将聊天和知识库控件迁移到同一组件层；本切片不会声称全站原生元素已替换。
+- 残余工作：`U6b` 将聊天和知识库控件迁移到同一组件层；本切片不会声称全站原生元素已替换。该残余项已由下方 `U6b` 记录完成。
+
+## U6b 聊天与知识库控件迁移（2026-11-13）
+
+### 目标与边界
+
+- 把 `/chat`、`/chat/[conversation_id]` 和 `/knowledge` 上仍由页面直接拼装的按钮、单行输入、多行输入、下拉、文件选择、确认框和提示，改接到 `U6a` 已有的 `app/_components/ui/` 组件。
+- 不新增第二套组件库，不增加 Button/Input/Textarea/Select/Switch/Tooltip/AlertDialog 之外的 primitive。
+- 不改变聊天发送、SSE、引用、知识上传、发布、停用或删除的请求与状态机。发布、停用、删除仍调用原来的 API；只是把浏览器 `confirm()` 换成 AlertDialog。
+- 配置台、登录和主题选择保持 `U6a` 的实现。仅两处共享修正：AlertDialog 叠层提高到知识库详情弹窗之上；详情弹窗关闭按钮改用同一 Button，避免知识库详情里留下原生关闭按钮。
+
+### 与已合并的可选发布前验收的衔接
+
+- 可选发布前验收已进入 `main`（合并提交 `7cd6aa3`）。知识库详情保留准备发布、待发布快照、直接发布确认、发布后验收状态和补跑验收。
+- 这些路径上的手工题目、未验收确认和补跑入口改用同一组件层。停用和删除仍用 AlertDialog，不再使用浏览器 `confirm()`。
+- 配置台的准备发布和激活请求保持原有行为；未验收确认从原生勾选改为 Switch，文案和“必须先确认才能直接发布”的门槛不变。
+
+### 验收
+
+- [x] 聊天会话栏、composer、示例、重试、引用入口、引用下划线、来源抽屉和历史核验按钮使用组件层。
+- [x] 知识库创建、筛选、验收集、replacement、发布/停用/删除确认和更新日历入口使用组件层。
+- [x] composer、会话侧栏、引用下划线和抽屉遮罩保留原有布局类，避免组件默认高度打断阅读区。
+- [x] `pnpm lint` 与 `pnpm typecheck` 通过。本地页面检查确认 composer 发送按钮仍在输入卡片内，知识库筛选值不再被标题的大写规则改写。
+- 共享样式修正：表单标题选择器改为 `label > span`，避免下拉当前值继承大写。AlertDialog 叠层高于详情弹窗。

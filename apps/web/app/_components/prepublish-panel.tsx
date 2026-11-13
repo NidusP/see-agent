@@ -17,6 +17,9 @@ import {
 import { type KnowledgeAcceptance, type KnowledgeSnapshotMember, type KnowledgeSnapshotSummary } from "../_lib/knowledge-api";
 import { ApiError } from "../_lib/request-json";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Switch } from "./ui/switch";
 
 export function PrepublishPanel({
   mode,
@@ -159,23 +162,32 @@ export function PrepublishPanel({
           {item.review_status !== "reviewed" ? <Button type="button" size="sm" variant="outline" onClick={() => confirmCase(item)} disabled={busy}>确认这道题</Button> : null}
         </div>
       ))}
-      <form onSubmit={addManualCase}>
+      <form className="config-form" onSubmit={addManualCase}>
         <label>
           <span>手工题目类型</span>
-          <select value={manualType} onChange={(event) => setManualType(event.target.value as "must_answer" | "must_refuse")} disabled={busy || !dataset}>
-            <option value="must_answer">必答</option>
-            <option value="must_refuse">必拒</option>
-          </select>
+          <Select
+            value={manualType}
+            onValueChange={(value) => setManualType((value ?? "must_refuse") as "must_answer" | "must_refuse")}
+            disabled={busy || !dataset}
+          >
+            <SelectTrigger className="w-full" aria-label="手工题目类型">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="must_answer">必答</SelectItem>
+              <SelectItem value="must_refuse">必拒</SelectItem>
+            </SelectContent>
+          </Select>
         </label>
         <label>
           <span>手工题目</span>
-          <input value={manualQuestion} onChange={(event) => setManualQuestion(event.target.value)} disabled={busy || !dataset} />
+          <Input value={manualQuestion} onChange={(event) => setManualQuestion(event.target.value)} disabled={busy || !dataset} />
         </label>
         {manualType === "must_answer" ? (
           <>
-            <label><span>期望 revision</span><input value={manualRevision} onChange={(event) => setManualRevision(event.target.value)} disabled={busy || !dataset} /></label>
-            <label><span>定位提示</span><input value={manualLocator} onChange={(event) => setManualLocator(event.target.value)} disabled={busy || !dataset} /></label>
-            <label><span>答案要点</span><input value={manualAnswer} onChange={(event) => setManualAnswer(event.target.value)} disabled={busy || !dataset} /></label>
+            <label><span>期望 revision</span><Input value={manualRevision} onChange={(event) => setManualRevision(event.target.value)} disabled={busy || !dataset} /></label>
+            <label><span>定位提示</span><Input value={manualLocator} onChange={(event) => setManualLocator(event.target.value)} disabled={busy || !dataset} /></label>
+            <label><span>答案要点</span><Input value={manualAnswer} onChange={(event) => setManualAnswer(event.target.value)} disabled={busy || !dataset} /></label>
           </>
         ) : null}
         <Button type="submit" variant="outline" size="sm" disabled={busy || !dataset || manualQuestion.trim() === ""}>添加手工题目</Button>
@@ -184,14 +196,15 @@ export function PrepublishPanel({
       {mode === "publish" && requiresAcknowledgement ? (
         <div className="quality-actions">
           <Button type="button" onClick={() => document.getElementById(acceptanceActionsId)?.scrollIntoView({ block: "nearest" })}>去跑上线验收</Button>
-          <label>
-            <input
-              type="checkbox"
+          <label className="checkbox-row">
+            <Switch
               checked={acknowledged}
-              onChange={(event) => setAcknowledged(event.target.checked)}
+              onCheckedChange={(checked) => setAcknowledged(checked)}
+              disabled={busy}
               data-testid="acknowledge-unvalidated"
+              aria-label="我知道尚未完成上线验收，仍要发布"
             />
-            我知道尚未完成上线验收，仍要发布
+            <span>我知道尚未完成上线验收，仍要发布</span>
           </label>
           <Button type="button" variant="outline" data-testid="publish-direct" disabled={busy || !acknowledged} onClick={() => void runAction(async () => { await onActivate?.(true); })}>直接发布</Button>
         </div>
@@ -240,7 +253,7 @@ export function PublishedAcceptanceReminder({
       {acceptance.status === "unvalidated" || acceptance.status === "failed" ? (
         <>
           <p>这份知识已在服务用户。建议补跑上线验收；这不会阻断聊天，也不会阻断继续上传。</p>
-          <button type="button" data-testid="makeup-onboarding" onClick={() => onMakeup(snapshotId)}>补跑验收</button>
+          <Button type="button" variant="outline" size="sm" data-testid="makeup-onboarding" onClick={() => onMakeup(snapshotId)}>补跑验收</Button>
         </>
       ) : null}
     </div>

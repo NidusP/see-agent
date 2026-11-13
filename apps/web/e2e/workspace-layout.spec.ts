@@ -129,7 +129,7 @@ test("系统管理员可以在配置台确认 ready revision 发布", async ({ p
   await page.getByTestId("prepare-publish-rev_pending").click();
   await expect(page.getByTestId("knowledge-acceptance-label")).toHaveText("未跑");
   await expect(page.getByTestId("publish-direct")).toBeDisabled();
-  await page.getByRole("checkbox", { name: "我知道尚未完成上线验收，仍要发布" }).check();
+  await page.getByRole("switch", { name: "我知道尚未完成上线验收，仍要发布" }).check();
   await page.getByTestId("publish-direct").click();
   await expect(page.getByText("已发布 · 未验收")).toBeVisible();
   await expect(page.getByText("暂无待发布 revision。")).toBeVisible();

@@ -42,7 +42,7 @@
 - `/config` 的每个 Agent/retrieval 编辑项均有相邻中文帮助和默认展开的同题对比例，说明参数变化可能怎样影响表达、候选证据或拒答，而不会改变的事实边界，以及需要受控评测、重建索引或审批发布的情形；示例不是推荐参数或发布证据，保存仍只创建候选。
 - `/config` 保存前会按 typed payload 比对当前版本：无语义变化时按钮不可用且不会创建候选；版本详情同时显示 Agent 与 retrieval 的完整历史，并以相邻版本的字段差异解释候选变更。历史由 `/api/agent/config/versions` 的 Postgres/Backend read model 提供，不从回答 evidence 推断。
 - Web 外观已采用可注册主题系统：`verdant-habitat`（绿野共生）为默认生态主题，`quiet-paper` 为兼容基线；主题只保存在当前浏览器的 localStorage，通过 `html[data-theme]` 应用，不写 Backend、知识或 Agent 配置
-- `U6a` 已接入 Tailwind v4 CSS-first 与 shadcn 本地源码组件层：主题 token 映射为 Tailwind semantic color，`app/_components/ui/` 拥有 Button/Input/Textarea/Select/Switch/Tooltip/AlertDialog。配置台、登录与主题选择已迁移；聊天和知识库仍待 `U6b` 复用该层逐页迁移。当前 shadcn registry source 使用 Base UI primitive，不增加业务状态或服务端权限路径。
+- `U6a` 已接入 Tailwind v4 CSS-first 与 shadcn 本地源码组件层：主题 token 映射为 Tailwind semantic color，`app/_components/ui/` 拥有 Button/Input/Textarea/Select/Switch/Tooltip/AlertDialog。配置台、登录与主题选择已迁移。`U6b` 已把聊天和知识库页面上的按钮、输入、多行输入、下拉、确认框和提示接到同一组件层；会话侧栏、composer、引用下划线和详情弹窗仍保留原有布局类。当前 shadcn registry source 使用 Base UI primitive，不增加业务状态或服务端权限路径。
 - `K7` 已在 `/config` 接入 execution/delivery/eval evidence：管理员可按 conversation/snapshot/revision 筛选回答，并展开 snapshot manifest、配置版本和 citation provenance；prompt 版本只从已登记的 `prompt_v1/prompt_v2` 选择
 - `Q1` 已在 `/config` 接入管理员 answer feedback、候选 experiment、报告对照、审批发布和 forward rollback；候选与发布状态由 Backend 决定，前端明确提示候选不影响线上、发布只影响后续新会话
 - `K9-S0` 已要求 `Conversation.owner_id`；Web 不参与授权，直达不存在或无权访问的会话时跳到当前账号可访问会话并保留统一提示
