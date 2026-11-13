@@ -53,9 +53,31 @@ import {
 } from "../_lib/onboarding-quality-api";
 import { PrepublishPanel, PublishedAcceptanceReminder } from "./prepublish-panel";
 import { isSystemAdmin, type SessionRole } from "../_lib/role";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Textarea } from "./ui/textarea";
 
 type EmptyFilter = "";
 type KnowledgeAction = "create" | "replace" | "publish" | "disable" | "delete";
+
+interface KnowledgeConfirmRequest {
+  title: string;
+  description: string;
+  confirmLabel: string;
+  destructive?: boolean;
+  run: () => Promise<void>;
+}
 
 interface KnowledgeFilters {
   status: KnowledgeDocumentStatus | EmptyFilter;
@@ -139,6 +161,7 @@ export function KnowledgeWorkspaceProvider({ children, currentRole }: { children
   const [replacementEffectiveAt, setReplacementEffectiveAt] = useState("");
   const [makeupSnapshotId, setMakeupSnapshotId] = useState<string>();
   const canPublish = isSystemAdmin(currentRole);
+  const [confirmRequest, setConfirmRequest] = useState<KnowledgeConfirmRequest>();
   const requestMakeup = useCallback((snapshotId: string) => {
     setMakeupSnapshotId(snapshotId);
     document.getElementById("onboarding-quality-workspace")?.scrollIntoView({ block: "nearest" });
@@ -420,50 +443,66 @@ export function KnowledgeWorkspaceProvider({ children, currentRole }: { children
     [handleUnauthenticated, reloadDocument, replacementEffectiveAt, selectedDetail?.document.document_id],
   );
 
-  const disableDocument = useCallback(async () => {
+  const disableDocument = useCallback(() => {
     const document = selectedDetail?.document;
-    if (!document || !window.confirm(`确认停用文档 ${document.display_name} 吗？`)) {
-      return;
+    if (!document) {
+      return Promise.resolve();
     }
-
-    setAction("disable");
-    setError(undefined);
-    setMessage(undefined);
-    try {
-      const response = await disableKnowledgeDocument(document.document_id, createIdempotencyKey());
-      setMessage(response.snapshot ? `已更新快照 ${response.snapshot.snapshot_id}。` : "文档已停用。");
-      await reloadDocument(response.document.document_id);
-    } catch (disableError) {
-      if (handleUnauthenticated(disableError)) {
-        return;
-      }
-      setError(readError(disableError));
-    } finally {
-      setAction(undefined);
-    }
+    setConfirmRequest({
+      title: "确认停用",
+      description: `确认停用文档 ${document.display_name} 吗？`,
+      confirmLabel: "停用文档",
+      destructive: true,
+      run: async () => {
+        setAction("disable");
+        setError(undefined);
+        setMessage(undefined);
+        try {
+          const response = await disableKnowledgeDocument(document.document_id, createIdempotencyKey());
+          setMessage(response.snapshot ? `已更新快照 ${response.snapshot.snapshot_id}。` : "文档已停用。");
+          await reloadDocument(response.document.document_id);
+        } catch (disableError) {
+          if (handleUnauthenticated(disableError)) {
+            return;
+          }
+          setError(readError(disableError));
+        } finally {
+          setAction(undefined);
+        }
+      },
+    });
+    return Promise.resolve();
   }, [handleUnauthenticated, reloadDocument, selectedDetail?.document]);
 
-  const deleteDocument = useCallback(async () => {
+  const deleteDocument = useCallback(() => {
     const document = selectedDetail?.document;
-    if (!document || !window.confirm(`确认删除文档 ${document.display_name} 吗？历史证据会保留。`)) {
-      return;
+    if (!document) {
+      return Promise.resolve();
     }
-
-    setAction("delete");
-    setError(undefined);
-    setMessage(undefined);
-    try {
-      const response = await deleteKnowledgeDocument(document.document_id, createIdempotencyKey());
-      setMessage(`文档 ${response.document.display_name} 已删除。`);
-      await reloadDocument(response.document.document_id);
-    } catch (deleteError) {
-      if (handleUnauthenticated(deleteError)) {
-        return;
-      }
-      setError(readError(deleteError));
-    } finally {
-      setAction(undefined);
-    }
+    setConfirmRequest({
+      title: "确认删除",
+      description: `确认删除文档 ${document.display_name} 吗？历史证据会保留。`,
+      confirmLabel: "删除文档",
+      destructive: true,
+      run: async () => {
+        setAction("delete");
+        setError(undefined);
+        setMessage(undefined);
+        try {
+          const response = await deleteKnowledgeDocument(document.document_id, createIdempotencyKey());
+          setMessage(`文档 ${response.document.display_name} 已删除。`);
+          await reloadDocument(response.document.document_id);
+        } catch (deleteError) {
+          if (handleUnauthenticated(deleteError)) {
+            return;
+          }
+          setError(readError(deleteError));
+        } finally {
+          setAction(undefined);
+        }
+      },
+    });
+    return Promise.resolve();
   }, [handleUnauthenticated, reloadDocument, selectedDetail?.document]);
 
   const value = useMemo<KnowledgeContextValue>(
@@ -555,7 +594,7 @@ export function KnowledgeWorkspaceProvider({ children, currentRole }: { children
 
   return (
     <KnowledgeContext.Provider value={value}>
-      <input
+      <Input
         ref={initialFileInputRef}
         id="knowledge-document-file-input"
         className="visually-hidden"
@@ -563,7 +602,7 @@ export function KnowledgeWorkspaceProvider({ children, currentRole }: { children
         accept=".txt,.md,.json,.pdf,.docx,.xlsx,.pptx"
         onChange={setInitialFile}
       />
-      <input
+      <Input
         ref={replacementFileInputRef}
         id="knowledge-revision-file-input"
         className="visually-hidden"
@@ -571,8 +610,45 @@ export function KnowledgeWorkspaceProvider({ children, currentRole }: { children
         accept=".txt,.md,.json,.pdf,.docx,.xlsx,.pptx"
         onChange={setReplacementFile}
       />
+      <AlertDialog open={Boolean(confirmRequest)} onOpenChange={(open) => { if (!open) setConfirmRequest(undefined); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmRequest?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{confirmRequest?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              variant={confirmRequest?.destructive ? "destructive" : "default"}
+              onClick={() => {
+                const run = confirmRequest?.run;
+                setConfirmRequest(undefined);
+                if (run) {
+                  void run();
+                }
+              }}
+            >
+              {confirmRequest?.confirmLabel ?? "确认"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {children}
     </KnowledgeContext.Provider>
+  );
+}
+
+function FilePickerButton({ htmlFor, children }: { htmlFor: string; children: ReactNode }) {
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="h-auto"
+      nativeButton={false}
+      render={<label htmlFor={htmlFor} />}
+    >
+      {children}
+    </Button>
   );
 }
 
@@ -587,11 +663,11 @@ export function KnowledgeWorkspace({ onOpenDetails }: { onOpenDetails?: () => vo
           <h2>文档与版本生命周期</h2>
         </div>
         <div className="header-chip-row">
-          <button type="button" className="secondary-button" onClick={knowledge.refresh} disabled={knowledge.refreshing || knowledge.loading}>
+          <Button type="button" variant="outline" size="sm" onClick={knowledge.refresh} disabled={knowledge.refreshing || knowledge.loading}>
             {knowledge.refreshing ? "刷新中" : "刷新"}
-          </button>
+          </Button>
           <span className="header-chip">{knowledge.total} 个文档</span>
-          {onOpenDetails ? <button type="button" className="secondary-button" data-testid="open-knowledge-details" onClick={onOpenDetails} disabled={!knowledge.selectedDocumentId}>查看详情</button> : null}
+          {onOpenDetails ? <Button type="button" variant="outline" size="sm" data-testid="open-knowledge-details" onClick={onOpenDetails} disabled={!knowledge.selectedDocumentId}>查看详情</Button> : null}
         </div>
       </header>
 
@@ -605,7 +681,7 @@ export function KnowledgeWorkspace({ onOpenDetails }: { onOpenDetails?: () => vo
         <div className="upload-actions lifecycle-form-fields">
           <label>
             <span>显示名称</span>
-            <input
+            <Input
               value={knowledge.displayName}
               onChange={(event) => knowledge.setDisplayName(event.target.value)}
               placeholder="默认使用文件名"
@@ -614,19 +690,17 @@ export function KnowledgeWorkspace({ onOpenDetails }: { onOpenDetails?: () => vo
           </label>
           <label>
             <span>生效时间</span>
-            <input
+            <Input
               type="datetime-local"
               value={knowledge.initialEffectiveAt}
               onChange={(event) => knowledge.setInitialEffectiveAt(event.target.value)}
             />
           </label>
           <div className="button-row">
-            <label className="secondary-button file-picker-button" htmlFor="knowledge-document-file-input">
-              选择文件
-            </label>
-            <button type="submit" data-testid="knowledge-create-submit" disabled={knowledge.action === "create" || !knowledge.initialFileName}>
+            <FilePickerButton htmlFor="knowledge-document-file-input">选择文件</FilePickerButton>
+            <Button type="submit" data-testid="knowledge-create-submit" disabled={knowledge.action === "create" || !knowledge.initialFileName}>
               {knowledge.action === "create" ? "创建中" : "创建文档"}
-            </button>
+            </Button>
           </div>
         </div>
       </form>
@@ -634,14 +708,22 @@ export function KnowledgeWorkspace({ onOpenDetails }: { onOpenDetails?: () => vo
       <section className="filter-card lifecycle-filter-card">
         <label>
           <span>文档状态</span>
-          <select value={knowledge.filters.status} onChange={(event) => knowledge.setFilter("status", event.target.value)}>
-            <option value="">全部</option>
-            {documentStatuses.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={knowledge.filters.status || "all"}
+            onValueChange={(value) => knowledge.setFilter("status", !value || value === "all" ? "" : value)}
+          >
+            <SelectTrigger className="w-full min-w-36" aria-label="文档状态">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部</SelectItem>
+              {documentStatuses.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
         <p>{knowledge.lastLoadedAt ? `最近刷新 ${formatDateTime(knowledge.lastLoadedAt)}` : "等待首次刷新"}</p>
       </section>
@@ -682,9 +764,9 @@ export function KnowledgeWorkspace({ onOpenDetails }: { onOpenDetails?: () => vo
                   <td>{formatDateTime(document.updated_at)}</td>
                   <td>
                     <div className="table-actions">
-                      <button type="button" onClick={() => { knowledge.setSelectedDocumentId(document.document_id); onOpenDetails?.(); }}>
+                      <Button type="button" variant="outline" size="sm" onClick={() => { knowledge.setSelectedDocumentId(document.document_id); onOpenDetails?.(); }}>
                         查看版本
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -783,12 +865,116 @@ function OnboardingQualityWorkspace() {
     <p className="muted-copy">可对待发布或已发布 snapshot 录入并审核真值问题。系统将固定 snapshot、模型与检索配置实际运行；只有全通过才可作为退役证据。验收是发布的推荐项，不会自动发布配置，也不会阻断聊天或继续上传。</p>
     {error ? <p className="error-copy" role="alert">{error}</p> : null}{message ? <p className="success-copy" role="status">{message}</p> : null}
     <div className="quality-grid">
-      <form className="config-form quality-form" onSubmit={createDataset}><h4>1. 创建验收集</h4><label><span>名称</span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：客户政策 2026-07" /></label><label><span>待发布或已发布 snapshot id</span><input value={snapshotID} onChange={(event) => setSnapshotID(event.target.value)} placeholder="从更新日历或待发布快照复制" /></label><button type="submit" disabled={loading}>创建草稿</button></form>
-      <div className="version-list quality-list"><h4>验收集</h4>{datasets.map((dataset) => <button key={dataset.dataset_id} type="button" className="evidence-list-row" aria-pressed={selected?.dataset_id === dataset.dataset_id} onClick={() => void select(dataset.dataset_id)}><span><strong>{dataset.name}</strong><small>{dataset.dataset_id} · {dataset.knowledge_snapshot_id}</small></span><StatusBadge status={dataset.status} /></button>)}{datasets.length === 0 ? <p className="muted-copy">尚未创建。</p> : null}</div>
+      <form className="config-form quality-form" onSubmit={createDataset}>
+        <h4>1. 创建验收集</h4>
+        <label>
+          <span>名称</span>
+          <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：客户政策 2026-07" />
+        </label>
+        <label>
+          <span>待发布或已发布 snapshot id</span>
+          <Input value={snapshotID} onChange={(event) => setSnapshotID(event.target.value)} placeholder="从更新日历或待发布快照复制" />
+        </label>
+        <Button type="submit" disabled={loading}>创建草稿</Button>
+      </form>
+      <div className="version-list quality-list">
+        <h4>验收集</h4>
+        {datasets.map((dataset) => (
+          <Button
+            key={dataset.dataset_id}
+            type="button"
+            variant="ghost"
+            className="evidence-list-row h-auto whitespace-normal"
+            aria-pressed={selected?.dataset_id === dataset.dataset_id}
+            onClick={() => void select(dataset.dataset_id)}
+          >
+            <span><strong>{dataset.name}</strong><small>{dataset.dataset_id} · {dataset.knowledge_snapshot_id}</small></span>
+            <StatusBadge status={dataset.status} />
+          </Button>
+        ))}
+        {datasets.length === 0 ? <p className="muted-copy">尚未创建。</p> : null}
+      </div>
     </div>
-    {selected ? <div className="quality-grid"><form className="config-form quality-form" onSubmit={createCase}><h4>2. 审核真值用例</h4><p className="muted-copy">当前 {selected.status} · {selected.cases?.length ?? 0} 题</p><label><span>类型</span><select value={caseType} disabled={selected.status !== "draft" || loading} onChange={(event) => setCaseType(event.target.value as "must_answer" | "must_refuse")}><option value="must_answer">必须回答并引用</option><option value="must_refuse">必须拒答</option></select></label><label><span>问题</span><textarea value={question} disabled={selected.status !== "draft" || loading} onChange={(event) => setQuestion(event.target.value)} /></label>{caseType === "must_answer" ? <><label><span>期望 revision（逗号分隔）</span><input value={revisionIDs} disabled={selected.status !== "draft" || loading} onChange={(event) => setRevisionIDs(event.target.value)} /></label><label><span>定位提示（逗号分隔）</span><input value={locatorHints} disabled={selected.status !== "draft" || loading} onChange={(event) => setLocatorHints(event.target.value)} /></label><label><span>答案要点（逗号分隔）</span><input value={answerPoints} disabled={selected.status !== "draft" || loading} onChange={(event) => setAnswerPoints(event.target.value)} /></label></> : null}<button type="submit" disabled={selected.status !== "draft" || loading}>添加 reviewed 用例</button></form>
-      <div className="quality-experiment-detail"><h4>3. 冻结并运行</h4><dl className="config-list"><div><dt>snapshot</dt><dd>{selected.knowledge_snapshot_id}</dd></div><div><dt>manifest</dt><dd>{selected.knowledge_snapshot_manifest_hash}</dd></div><div><dt>case hash</dt><dd>{selected.cases_sha256 || "尚未冻结"}</dd></div></dl><div className="quality-actions">{selected.status === "draft" ? <button type="button" onClick={() => void freeze()} disabled={loading}>冻结真值集</button> : <button type="button" onClick={() => void run()} disabled={loading}>运行质量门</button>}</div>{lastRun ? <div className="detail-task-card"><div className="section-heading"><strong>{lastRun.run_id}</strong><StatusBadge status={lastRun.status} /></div><p>配置：{lastRun.config_version} / {lastRun.retrieval_config_version}</p>{lastRun.status === "queued" || lastRun.status === "running" ? <button type="button" className="secondary-button" onClick={() => void refreshRun()} disabled={loading}>刷新结果</button> : null}{lastRun.error ? <p className="error-copy">{lastRun.error.code}: {lastRun.error.message}</p> : null}{lastRun.results?.map((result) => <div key={result.case_id}><p>{result.passed ? "通过" : "失败"} · {result.case_id}{result.failure_code ? ` · ${result.failure_code}` : ""}</p><p>{result.observed_answer}</p><small>revision：{String(result.expected_revision_hit)} · locator：{String(result.expected_locator_hit)} · 要点覆盖：{result.answer_point_hit_rate ?? "-"}</small>{result.observed_citations?.map((citation, index) => <small key={`${citation.revision_id}-${index}`}>引用：{citation.revision_id ?? "-"} · {citation.citation_label ?? citation.snippet ?? "-"}</small>)}</div>)}</div> : null}</div>
-    </div> : null}
+    {selected ? (
+      <div className="quality-grid">
+        <form className="config-form quality-form" onSubmit={createCase}>
+          <h4>2. 审核真值用例</h4>
+          <p className="muted-copy">当前 {selected.status} · {selected.cases?.length ?? 0} 题</p>
+          <label>
+            <span>类型</span>
+            <Select
+              value={caseType}
+              disabled={selected.status !== "draft" || loading}
+              onValueChange={(value) => setCaseType((value ?? "must_answer") as "must_answer" | "must_refuse")}
+            >
+              <SelectTrigger className="w-full" aria-label="类型">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="must_answer">必须回答并引用</SelectItem>
+                <SelectItem value="must_refuse">必须拒答</SelectItem>
+              </SelectContent>
+            </Select>
+          </label>
+          <label>
+            <span>问题</span>
+            <Textarea value={question} disabled={selected.status !== "draft" || loading} onChange={(event) => setQuestion(event.target.value)} />
+          </label>
+          {caseType === "must_answer" ? (
+            <>
+              <label>
+                <span>期望 revision（逗号分隔）</span>
+                <Input value={revisionIDs} disabled={selected.status !== "draft" || loading} onChange={(event) => setRevisionIDs(event.target.value)} />
+              </label>
+              <label>
+                <span>定位提示（逗号分隔）</span>
+                <Input value={locatorHints} disabled={selected.status !== "draft" || loading} onChange={(event) => setLocatorHints(event.target.value)} />
+              </label>
+              <label>
+                <span>答案要点（逗号分隔）</span>
+                <Input value={answerPoints} disabled={selected.status !== "draft" || loading} onChange={(event) => setAnswerPoints(event.target.value)} />
+              </label>
+            </>
+          ) : null}
+          <Button type="submit" disabled={selected.status !== "draft" || loading}>添加 reviewed 用例</Button>
+        </form>
+        <div className="quality-experiment-detail">
+          <h4>3. 冻结并运行</h4>
+          <dl className="config-list">
+            <div><dt>snapshot</dt><dd>{selected.knowledge_snapshot_id}</dd></div>
+            <div><dt>manifest</dt><dd>{selected.knowledge_snapshot_manifest_hash}</dd></div>
+            <div><dt>case hash</dt><dd>{selected.cases_sha256 || "尚未冻结"}</dd></div>
+          </dl>
+          <div className="quality-actions">
+            {selected.status === "draft" ? (
+              <Button type="button" onClick={() => void freeze()} disabled={loading}>冻结真值集</Button>
+            ) : (
+              <Button type="button" onClick={() => void run()} disabled={loading}>运行质量门</Button>
+            )}
+          </div>
+          {lastRun ? (
+            <div className="detail-task-card">
+              <div className="section-heading"><strong>{lastRun.run_id}</strong><StatusBadge status={lastRun.status} /></div>
+              <p>配置：{lastRun.config_version} / {lastRun.retrieval_config_version}</p>
+              {lastRun.status === "queued" || lastRun.status === "running" ? (
+                <Button type="button" variant="outline" size="sm" onClick={() => void refreshRun()} disabled={loading}>刷新结果</Button>
+              ) : null}
+              {lastRun.error ? <p className="error-copy">{lastRun.error.code}: {lastRun.error.message}</p> : null}
+              {lastRun.results?.map((result) => (
+                <div key={result.case_id}>
+                  <p>{result.passed ? "通过" : "失败"} · {result.case_id}{result.failure_code ? ` · ${result.failure_code}` : ""}</p>
+                  <p>{result.observed_answer}</p>
+                  <small>revision：{String(result.expected_revision_hit)} · locator：{String(result.expected_locator_hit)} · 要点覆盖：{result.answer_point_hit_rate ?? "-"}</small>
+                  {result.observed_citations?.map((citation, index) => (
+                    <small key={`${citation.revision_id}-${index}`}>引用：{citation.revision_id ?? "-"} · {citation.citation_label ?? citation.snippet ?? "-"}</small>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    ) : null}
   </section>;
 }
 
@@ -846,19 +1032,17 @@ export function KnowledgeDetailWorkspace() {
               </div>
               <label>
                 <span>生效时间</span>
-                <input
+                <Input
                   type="datetime-local"
                   value={knowledge.replacementEffectiveAt}
                   onChange={(event) => knowledge.setReplacementEffectiveAt(event.target.value)}
                 />
               </label>
               <div className="button-row">
-                <label className="secondary-button file-picker-button" htmlFor="knowledge-revision-file-input">
-                  选择 replacement 文件
-                </label>
-                <button type="submit" disabled={knowledge.action === "replace" || !knowledge.replacementFileName}>
+                <FilePickerButton htmlFor="knowledge-revision-file-input">选择 replacement 文件</FilePickerButton>
+                <Button type="submit" disabled={knowledge.action === "replace" || !knowledge.replacementFileName}>
                   {knowledge.action === "replace" ? "提交中" : "提交 revision"}
-                </button>
+                </Button>
               </div>
             </form>
           ) : null}
@@ -925,20 +1109,20 @@ export function KnowledgeDetailWorkspace() {
             ) : null}
             {!knowledge.canPublish ? <p className="muted-copy">停用与删除须在通过新知识验收后，由系统管理员在系统配置台审批。</p> : null}
             {document.status === "active" && knowledge.canPublish ? (
-              <button
+              <Button
                 type="button"
-                className="danger-button"
+                variant="destructive"
                 onClick={knowledge.disableDocument}
                 disabled={knowledge.action === "disable" || hasInflightRevision || knowledge.retirementReadiness?.stage !== "ready_to_disable"}
               >
                 {knowledge.action === "disable" ? "停用中" : "停用文档"}
-              </button>
+              </Button>
             ) : null}
             {document.status === "active" && hasInflightRevision ? <p className="muted-copy">当前有 revision 正在投影，完成前不可停用。</p> : null}
             {document.status === "disabled" && knowledge.canPublish ? (
-              <button type="button" className="danger-button" onClick={knowledge.deleteDocument} disabled={knowledge.action === "delete" || knowledge.retirementReadiness?.stage !== "ready_to_delete"}>
+              <Button type="button" variant="destructive" onClick={knowledge.deleteDocument} disabled={knowledge.action === "delete" || knowledge.retirementReadiness?.stage !== "ready_to_delete"}>
                 {knowledge.action === "delete" ? "删除中" : "删除文档"}
-              </button>
+              </Button>
             ) : null}
             {document.status === "deleted" ? <p className="muted-copy">文档已删除，历史 evidence 保留在服务端。</p> : null}
           </section>
@@ -1006,15 +1190,16 @@ function KnowledgeUpdateCalendar({
                 </td>
                 <td>
                   {update.snapshot_id ? (
-                    <button
+                    <Button
                       type="button"
-                      className="table-link-button"
+                      variant="link"
+                      className="table-link-button h-auto whitespace-normal px-0"
                       data-testid="knowledge-update-snapshot"
                       onClick={() => void onSelectSnapshot(update.snapshot_id!)}
                     >
                       {update.snapshot_id}
                       {update.acceptance?.display_label ? <span data-testid="knowledge-acceptance-label">{update.acceptance.display_label}</span> : null}
-                    </button>
+                    </Button>
                   ) : "-"}
                 </td>
                 <td><FreshnessScanFacts event={update} /></td>

@@ -1324,7 +1324,7 @@ button,
   gap: 8px;
 }
 
-.filter-card label span {
+.filter-card label > span {
   color: var(--muted);
   font-size: 0.78rem;
   letter-spacing: 0.08em;
@@ -1428,7 +1428,7 @@ tr.is-selected-row {
   gap: 8px;
 }
 
-.config-form label span {
+.config-form label > span {
   color: var(--muted);
   font-size: 0.78rem;
   letter-spacing: 0.08em;

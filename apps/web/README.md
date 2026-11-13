@@ -25,7 +25,7 @@
 - `/config`：真实 agent / retrieval config 读取、保存和 Agent 版本历史；管理员还可按 conversation/snapshot/revision 查询 execution evidence，并查看回答的 manifest、配置、citation、delivery 与 eval report，以及记录质量 feedback、比较候选 experiment、审批发布或前滚回退
 - `/config`：系统管理员可在“知识发布审批”区查看已完成索引的 `ready` revision，并通过现有生命周期 API 确认发布 successor snapshot；知识库管理员仍只能上传、替换和观察投影状态
 - 系统管理员的“配置详情”和知识库管理员的“知识库详情”均按需在详情弹窗中打开，主工作区不再被固定右栏压缩；弹窗支持遮罩/关闭按钮/`Escape` 关闭，回答证据、知识快照和文档版本入口会自动打开对应详情
-- UI foundation：`/config`、登录、主题选择与退出入口使用 Tailwind CSS 与仓库内 shadcn/ui 源码组件；聊天和知识库控件仍按后续 `U6b` 迁移
+- UI foundation：`/config`、登录、主题选择、退出入口、聊天和知识库的交互控件使用 Tailwind CSS 与仓库内 shadcn/ui 源码组件。聊天 composer、引用下划线和会话侧栏继续使用原有布局类，避免组件默认尺寸打乱阅读区。
 - 视口工作区壳：`/chat`、`/knowledge` 与 `/config` 的顶级壳固定为 `100dvh`（回退 `100vh`）；根页面不滚动，桌面采用已声明的分区滚动，窄屏由聊天主区或管理内容区单独滚动，移动会话侧栏与引用抽屉仍以 fixed overlay 显示
 
 注意：

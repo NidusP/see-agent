@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Dialog } from "@base-ui/react/dialog";
 import { X } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ComponentProps, type ReactElement, type ReactNode } from "react";
 
 import {
   ChatConversationList,
@@ -16,6 +16,9 @@ import { ConfigDetailWorkspace, ConfigWorkspace, ConfigWorkspaceProvider } from 
 import { KnowledgeDetailWorkspace, KnowledgeWorkspace, KnowledgeWorkspaceProvider } from "./knowledge-workspace";
 import { LogoutButton } from "./logout-button";
 import { ThemePicker } from "./theme-picker";
+import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { cn } from "../_lib/utils";
 import { isKnowledgeAdmin, isSystemAdmin, sessionRoleLabel, type SessionRole } from "../_lib/role";
 
 type WorkspaceSection = "chat" | "knowledge" | "config";
@@ -27,6 +30,24 @@ const sectionLinks: Array<{ href: string; label: string; section: WorkspaceSecti
 ];
 
 const sidebarStorageKey = "see-agent:chat-sidebar-collapsed";
+
+function ChromeButton({ className, ...props }: ComponentProps<typeof Button>) {
+  return (
+    <Button
+      className={cn("h-auto whitespace-normal font-normal shadow-none disabled:opacity-100", className)}
+      {...props}
+    />
+  );
+}
+
+function IconTooltip({ label, children }: { label: string; children: ReactElement }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger render={children} />
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
 
 interface WorkspaceShellProps {
   activeSection: WorkspaceSection;
@@ -132,26 +153,28 @@ function ChatFirstWorkspace({ activeSection, currentRole }: Omit<WorkspaceShellP
             <span className="chat-sidebar-mark" aria-hidden="true">SA</span>
             <span className="chat-sidebar-brand-copy">智能问答</span>
           </Link>
-          <button
-            type="button"
-            className="icon-button chat-sidebar-collapse"
-            data-testid="chat-sidebar-toggle"
-            aria-label={sidebarCollapsed ? "展开会话侧栏" : "收起会话侧栏"}
-            title={sidebarCollapsed ? "展开会话侧栏" : "收起会话侧栏"}
-            onClick={toggleSidebar}
-          >
-            <span aria-hidden="true">{sidebarCollapsed ? ">" : "<"}</span>
-          </button>
-          <button
-            type="button"
-            className="icon-button chat-sidebar-mobile-close"
-            data-testid="chat-sidebar-mobile-close"
-            aria-label="关闭会话侧栏"
-            title="关闭会话侧栏"
-            onClick={closeMobileSidebar}
-          >
-            <span aria-hidden="true">×</span>
-          </button>
+          <IconTooltip label={sidebarCollapsed ? "展开会话侧栏" : "收起会话侧栏"}>
+            <ChromeButton
+              type="button"
+              className="icon-button chat-sidebar-collapse"
+              data-testid="chat-sidebar-toggle"
+              aria-label={sidebarCollapsed ? "展开会话侧栏" : "收起会话侧栏"}
+              onClick={toggleSidebar}
+            >
+              <span aria-hidden="true">{sidebarCollapsed ? ">" : "<"}</span>
+            </ChromeButton>
+          </IconTooltip>
+          <IconTooltip label="关闭会话侧栏">
+            <ChromeButton
+              type="button"
+              className="icon-button chat-sidebar-mobile-close"
+              data-testid="chat-sidebar-mobile-close"
+              aria-label="关闭会话侧栏"
+              onClick={closeMobileSidebar}
+            >
+              <span aria-hidden="true">×</span>
+            </ChromeButton>
+          </IconTooltip>
         </div>
 
         <div className="chat-sidebar-new">
@@ -168,7 +191,7 @@ function ChatFirstWorkspace({ activeSection, currentRole }: Omit<WorkspaceShellP
         </div>
       </aside>
 
-      <button
+      <ChromeButton
         type="button"
         className="chat-sidebar-scrim"
         aria-label="关闭会话侧栏"
@@ -178,19 +201,21 @@ function ChatFirstWorkspace({ activeSection, currentRole }: Omit<WorkspaceShellP
       <section className="chat-first-frame" data-testid="chat-workspace-frame">
         <header className="chat-topbar">
           <div className="chat-topbar-leading">
-            <button
-              type="button"
-              className="icon-button chat-mobile-sidebar-toggle"
-              data-testid="chat-sidebar-mobile-toggle"
-              aria-label="打开会话侧栏"
-              aria-expanded={sidebarOpen}
-              onClick={() => setSidebarOpen(true)}
-            >
-              <span aria-hidden="true">=</span>
-            </button>
+            <IconTooltip label="打开会话侧栏">
+              <ChromeButton
+                type="button"
+                className="icon-button chat-mobile-sidebar-toggle"
+                data-testid="chat-sidebar-mobile-toggle"
+                aria-label="打开会话侧栏"
+                aria-expanded={sidebarOpen}
+                onClick={() => setSidebarOpen(true)}
+              >
+                <span aria-hidden="true">=</span>
+              </ChromeButton>
+            </IconTooltip>
             {canManageKnowledge ? (
               <div className="workspace-switcher">
-                <button
+                <ChromeButton
                   type="button"
                   className="workspace-switcher-trigger"
                   data-testid="workspace-switcher"
@@ -199,7 +224,7 @@ function ChatFirstWorkspace({ activeSection, currentRole }: Omit<WorkspaceShellP
                   onClick={() => setWorkspaceMenuOpen((current) => !current)}
                 >
                   <span data-testid="workspace-current-section">{activeSectionLabel}</span> <span aria-hidden="true">v</span>
-                </button>
+                </ChromeButton>
                 {workspaceMenuOpen ? (
                   <nav className="workspace-switcher-menu" aria-label="管理工作区" data-testid="workspace-switcher-menu">
                     {visibleSectionLinks.map((link) => (
@@ -271,7 +296,13 @@ function WorkspaceDetailDialog({ open, title, onClose, children }: { open: boole
         <Dialog.Popup className="workspace-detail-dialog" data-testid="workspace-detail-dialog">
           <header className="workspace-detail-dialog-header">
             <Dialog.Title>{title}</Dialog.Title>
-            <Dialog.Close className="icon-button" data-testid="workspace-detail-close" aria-label="关闭详情" title="关闭详情"><X size={18} aria-hidden="true" /></Dialog.Close>
+            <Dialog.Close
+              data-testid="workspace-detail-close"
+              aria-label="关闭详情"
+              render={<Button variant="ghost" size="icon" className="icon-button h-auto" />}
+            >
+              <X size={18} aria-hidden="true" />
+            </Dialog.Close>
           </header>
           <div className="workspace-detail-dialog-content">{children}</div>
         </Dialog.Popup>

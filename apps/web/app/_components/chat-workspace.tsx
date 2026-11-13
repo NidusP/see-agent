@@ -12,8 +12,10 @@ import {
   useMemo,
   useRef,
   useState,
+  type ComponentProps,
   type FormEvent,
   type KeyboardEvent,
+  type ReactElement,
   type ReactNode,
 } from "react";
 
@@ -39,6 +41,11 @@ import {
   type RevalidationRun,
 } from "../_lib/chat-api";
 import { recoverFromUnauthenticated } from "../_lib/auth-recovery";
+import { cn } from "../_lib/utils";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface ChatContextValue {
   conversations: Conversation[];
@@ -790,22 +797,42 @@ export function ChatWorkspaceProvider({
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 }
 
+function ChromeButton({ className, ...props }: ComponentProps<typeof Button>) {
+  return (
+    <Button
+      className={cn("h-auto whitespace-normal font-normal shadow-none disabled:opacity-100", className)}
+      {...props}
+    />
+  );
+}
+
+function IconTooltip({ label, children }: { label: string; children: ReactElement }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger render={children} />
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 export function ChatNewConversationButton() {
   const { creating, createNewConversation } = useChatWorkspace();
+  const label = creating ? "正在创建对话" : "新建对话";
 
   return (
-    <button
-      type="button"
-      className="chat-new-conversation"
-      data-testid="chat-new-conversation"
-      aria-label={creating ? "正在创建对话" : "新建对话"}
-      title={creating ? "正在创建对话" : "新建对话"}
-      onClick={() => void createNewConversation()}
-      disabled={creating}
-    >
-      <span className="chat-new-conversation-icon" aria-hidden="true">+</span>
-      <span className="chat-new-conversation-label">{creating ? "创建中" : "新建对话"}</span>
-    </button>
+    <IconTooltip label={label}>
+      <ChromeButton
+        type="button"
+        className="chat-new-conversation"
+        data-testid="chat-new-conversation"
+        aria-label={label}
+        onClick={() => void createNewConversation()}
+        disabled={creating}
+      >
+        <span className="chat-new-conversation-icon" aria-hidden="true">+</span>
+        <span className="chat-new-conversation-label">{creating ? "创建中" : "新建对话"}</span>
+      </ChromeButton>
+    </IconTooltip>
   );
 }
 
@@ -884,9 +911,10 @@ export function ChatConversationList({ onConversationNavigate }: { onConversatio
                   }}
                 >
                   <label className="sr-only" htmlFor={`conversation-title-${conversation.conversation_id}`}>重命名会话</label>
-                  <input
+                  <Input
                     id={`conversation-title-${conversation.conversation_id}`}
                     ref={titleInputRef}
+                    className="h-auto"
                     value={titleDraft}
                     onChange={(event) => setTitleDraft(event.target.value)}
                     onKeyDown={(event) => {
@@ -900,10 +928,10 @@ export function ChatConversationList({ onConversationNavigate }: { onConversatio
                     data-testid={`conversation-rename-input-${conversation.conversation_id}`}
                   />
                   <div className="conversation-title-edit-actions">
-                    <button type="submit" disabled={isSaving} data-testid={`conversation-rename-save-${conversation.conversation_id}`}>
+                    <Button type="submit" size="xs" variant="secondary" className="h-auto" disabled={isSaving} data-testid={`conversation-rename-save-${conversation.conversation_id}`}>
                       {isSaving ? "保存中" : "保存"}
-                    </button>
-                    <button type="button" onClick={cancelRename} disabled={isSaving}>取消</button>
+                    </Button>
+                    <Button type="button" size="xs" variant="ghost" className="h-auto" onClick={cancelRename} disabled={isSaving}>取消</Button>
                   </div>
                   {renameError ? <p className="conversation-title-edit-error" role="alert">{renameError}</p> : null}
                 </form>
@@ -920,16 +948,17 @@ export function ChatConversationList({ onConversationNavigate }: { onConversatio
                       <span>{formatDateTime(conversation.updated_at)}</span>
                     </div>
                   </Link>
-                  <button
-                    type="button"
-                    className="conversation-rename-button"
-                    aria-label={`重命名会话：${conversation.title}`}
-                    title="重命名会话"
-                    onClick={() => startRename(conversation)}
-                    data-testid={`conversation-rename-${conversation.conversation_id}`}
-                  >
-                    重命名
-                  </button>
+                  <IconTooltip label="重命名会话">
+                    <ChromeButton
+                      type="button"
+                      className="conversation-rename-button"
+                      aria-label={`重命名会话：${conversation.title}`}
+                      onClick={() => startRename(conversation)}
+                      data-testid={`conversation-rename-${conversation.conversation_id}`}
+                    >
+                      重命名
+                    </ChromeButton>
+                  </IconTooltip>
                 </>
               )}
             </article>
@@ -1055,9 +1084,9 @@ export function ChatWorkspacePanel() {
                     <article key={prompt}>
                       <span>示例</span>
                       <p>{prompt}</p>
-                      <button type="button" className="secondary-button" onClick={() => applyExamplePrompt(prompt)}>
+                      <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => applyExamplePrompt(prompt)}>
                         使用这条
-                      </button>
+                      </Button>
                     </article>
                   ))}
                 </div>
@@ -1095,26 +1124,27 @@ export function ChatWorkspacePanel() {
           </div>
         </div>
         {!followingLatest && (messages.length > 0 || pendingTurn) ? (
-          <button
-            type="button"
-            className="jump-to-latest"
-            data-testid="jump-to-latest"
-            aria-label="回到最新"
-            title="回到最新"
-            onClick={scrollToLatest}
-          >
-            <ArrowDownIcon aria-hidden="true" size={20} strokeWidth={2.25} />
-          </button>
+          <IconTooltip label="回到最新">
+            <ChromeButton
+              type="button"
+              className="jump-to-latest"
+              data-testid="jump-to-latest"
+              aria-label="回到最新"
+              onClick={scrollToLatest}
+            >
+              <ArrowDownIcon aria-hidden="true" size={20} strokeWidth={2.25} />
+            </ChromeButton>
+          </IconTooltip>
         ) : null}
       </section>
 
       <section className="composer-card">
         <form onSubmit={(event) => void sendCurrentMessage(event)}>
           <div className="composer-input-shell">
-            <textarea
+            <Textarea
               ref={composerInputRef}
               data-testid="chat-composer-input"
-              className="composer-input"
+              className="composer-input field-sizing-fixed block h-auto min-h-16 w-full resize-none rounded-[18px] border-0 bg-transparent px-4 pt-4 pr-16 pb-4 text-base shadow-none focus-visible:border-transparent focus-visible:ring-0 md:text-base"
               rows={1}
               aria-label="输入消息"
               placeholder="向助手提问"
@@ -1123,27 +1153,29 @@ export function ChatWorkspacePanel() {
               onKeyDown={handleComposerKeyDown}
             />
             {sending ? (
-              <button
-                data-testid="chat-abort-button"
-                type="button"
-                className="composer-inline-button is-abort"
-                aria-label="停止生成"
-                title="停止生成"
-                onClick={abortCurrentMessage}
-              >
-                <SquareIcon aria-hidden="true" size={16} fill="currentColor" />
-              </button>
+              <IconTooltip label="停止生成">
+                <ChromeButton
+                  data-testid="chat-abort-button"
+                  type="button"
+                  className="composer-inline-button is-abort"
+                  aria-label="停止生成"
+                  onClick={abortCurrentMessage}
+                >
+                  <SquareIcon aria-hidden="true" size={16} fill="currentColor" />
+                </ChromeButton>
+              </IconTooltip>
             ) : (
-              <button
-                data-testid="chat-send-button"
-                type="submit"
-                className="composer-inline-button"
-                aria-label="发送消息"
-                title="发送消息"
-                disabled={composer.trim().length === 0}
-              >
-                <ArrowUpIcon aria-hidden="true" size={20} strokeWidth={2.5} />
-              </button>
+              <IconTooltip label="发送消息">
+                <ChromeButton
+                  data-testid="chat-send-button"
+                  type="submit"
+                  className="composer-inline-button"
+                  aria-label="发送消息"
+                  disabled={composer.trim().length === 0}
+                >
+                  <ArrowUpIcon aria-hidden="true" size={20} strokeWidth={2.5} />
+                </ChromeButton>
+              </IconTooltip>
             )}
           </div>
           {failedAttempt || sending || error ? (
@@ -1161,15 +1193,16 @@ export function ChatWorkspacePanel() {
                 ) : null}
               </div>
               {failedAttempt ? (
-                <button
+                <Button
                   data-testid="chat-retry-button"
                   type="button"
-                  className="secondary-button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => void retryLastFailedMessage()}
                   disabled={sending}
                 >
                   重试上一条
-                </button>
+                </Button>
               ) : null}
             </div>
           ) : null}
@@ -1292,14 +1325,15 @@ function ConversationMessage({
           ) : null}
           {canShowSources && citationCount > 0 ? (
             <div className="message-actions">
-              <button
+              <Button
                 type="button"
-                className="citation-link"
+                variant="ghost"
+                className="citation-link h-auto w-auto whitespace-normal px-0 font-bold hover:bg-transparent"
                 data-testid="assistant-citation-link"
                 onClick={() => onFocusCitations(message.message_id, citedCitationRanks)}
               >
                 查看 {citationCount} 条{citedCitationRanks ? "已引用来源" : "来源"}
-              </button>
+              </Button>
             </div>
           ) : null}
         </>
@@ -1414,9 +1448,9 @@ function CitationFootprint({
 }) {
   return (
     <span className="citation-footprint">
-      <button
+      <ChromeButton
         type="button"
-        className="citation-footprint-trigger"
+        className="citation-footprint-trigger select-text"
         data-testid="citation-anchor"
         data-citation-ranks={citationRanks.join(",")}
         aria-label="查看这段结论的依据"
@@ -1434,7 +1468,7 @@ function CitationFootprint({
         onClick={onOpen}
       >
         {content}
-      </button>
+      </ChromeButton>
       {previewVisible ? (
         <CitationAnchorPreview
           messageId={messageId}
@@ -1563,7 +1597,7 @@ export function CitationWorkspaceDrawer() {
 
   return (
     <>
-      <button
+      <ChromeButton
         type="button"
         className="citation-drawer-scrim"
         aria-label="关闭来源详情"
@@ -1607,16 +1641,17 @@ export function CitationWorkspacePanel() {
           <p className="eyebrow">回答依据</p>
           <h2>来源引用</h2>
         </div>
-        <button
-          type="button"
-          className="icon-button"
-          data-testid="citation-drawer-close"
-          aria-label="关闭来源详情"
-          title="关闭来源详情"
-          onClick={closeCitationDrawer}
-        >
-          <span aria-hidden="true">x</span>
-        </button>
+        <IconTooltip label="关闭来源详情">
+          <ChromeButton
+            type="button"
+            className="icon-button"
+            data-testid="citation-drawer-close"
+            aria-label="关闭来源详情"
+            onClick={closeCitationDrawer}
+          >
+            <span aria-hidden="true">x</span>
+          </ChromeButton>
+        </IconTooltip>
       </header>
 
       {!selectedConversation ? (
@@ -1722,15 +1757,16 @@ function AnswerRevalidation({
         {run ? <span className={`status-badge status-${run.status}`}>{formatRevalidationStatus(run.status)}</span> : null}
       </div>
       {!run ? (
-        <button
+        <Button
           type="button"
-          className="secondary-button"
+          variant="outline"
+          size="sm"
           data-testid="message-revalidate-action"
           onClick={() => void onRevalidate(message)}
           disabled={state?.submitting}
         >
           {state?.submitting ? "提交中" : "使用最新知识核验"}
-        </button>
+        </Button>
       ) : (
         <>
           <div className="answer-revalidation-meta">
@@ -1739,15 +1775,16 @@ function AnswerRevalidation({
             <span>请求于 {formatDateTime(run.requested_at)}</span>
           </div>
           {isPending ? (
-            <button
+            <Button
               type="button"
-              className="secondary-button"
+              variant="outline"
+              size="sm"
               data-testid="message-revalidation-refresh"
               onClick={() => void onRefresh(message.message_id)}
               disabled={state?.refreshing}
             >
               {state?.refreshing ? "刷新中" : "刷新核验状态"}
-            </button>
+            </Button>
           ) : null}
           {run.status === "failed" ? <p className="inline-error">{run.error?.message ?? "核验未能完成，请稍后重试。"}</p> : null}
           {run.status === "completed" && run.result ? <RevalidationResultView result={run.result} /> : null}
